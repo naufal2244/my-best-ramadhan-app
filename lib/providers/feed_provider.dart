@@ -15,16 +15,13 @@ class FeedProvider with ChangeNotifier {
   List<String> get bookmarkIds => _bookmarkIds;
   bool get isLoading => _isLoading;
 
-  /// Ambil metadata artikel (Feed)
+  /// Ambil metadata artikel (Feed) dari Firestore
   Future<void> fetchArticles() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final snapshot = await _firestore
-          .collection('feeds')
-          .orderBy('publishedAt', descending: true)
-          .get();
+      final snapshot = await _firestore.collection('feeds').get();
 
       _articles = snapshot.docs
           .map((doc) => ArticleModel.fromMap(doc.id, doc.data()))

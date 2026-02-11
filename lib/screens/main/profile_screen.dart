@@ -157,7 +157,7 @@ class ProfileScreen extends StatelessWidget {
                   _buildMenuItem(
                     icon: Icons.person_outline,
                     title: 'Edit Profil',
-                    subtitle: 'Ubah nama dan foto profil',
+                    subtitle: 'Ubah nama dan kata sandi',
                     onTap: () {
                       Navigator.pushNamed(context, '/edit-profile');
                     },
@@ -169,8 +169,8 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.track_changes,
                     title: 'Target Saya',
                     subtitle: 'Atur target khatam Al-Qur\'an',
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const TargetSettingScreen(
@@ -178,6 +178,11 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ),
                       );
+
+                      if (result == 'target_updated' && context.mounted) {
+                        _showSuccessSnackBar(
+                            context, 'Target Khatam berhasil diperbarui! 🎯');
+                      }
                     },
                   ),
 
@@ -382,6 +387,22 @@ class ProfileScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: const Color(0xFF32D74B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 }

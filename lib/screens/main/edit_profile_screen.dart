@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({Key? key}) : super(key: key);
@@ -9,8 +12,8 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'Naufal Naufal Naufal');
-  final _emailController = TextEditingController(text: '123@gmail.com');
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -21,6 +24,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    final userData = context.read<AuthProvider>().userData;
+    _nameController = TextEditingController(text: userData?.displayName ?? '');
+    _emailController = TextEditingController(text: userData?.email ?? '');
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -28,6 +39,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _newPasswordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _showSnackBar(String message, {bool isError = false}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: isError ? Colors.red : const Color(0xFF32D74B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   @override
@@ -336,26 +363,52 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final auth = context.read<AuthProvider>();
+        final userData = auth.userData;
 
-      setState(() => _isLoading = false);
+        // 1. Update Name if changed
+        if (_nameController.text.trim() != userData?.displayName) {
+          await auth.updateProfileName(_nameController.text.trim());
+        }
 
-      if (mounted) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Profil berhasil diperbarui'),
-            backgroundColor: const Color(0xFF32D74B),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        // 2. Update Password if requested
+        if (_oldPasswordController.text.isNotEmpty &&
+            _newPasswordController.text.isNotEmpty) {
+          // Re-authenticate first
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null && user.email != null) {
+            AuthCredential credential = EmailAuthProvider.credential(
+              email: user.email!,
+              password: _oldPasswordController.text,
+            );
 
-        // Go back
-        Navigator.pop(context);
+            await user.reauthenticateWithCredential(credential);
+            await auth.updatePassword(_newPasswordController.text);
+          }
+        }
+
+        if (mounted) {
+          _showSnackBar('Profil berhasil diperbarui! ✨');
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        debugPrint('Error saving profile: $e');
+        String errorMessage = 'Gagal memperbarui profil.';
+
+        if (e is FirebaseAuthException) {
+          if (e.code == 'wrong-password') {
+            errorMessage = 'Kata sandi lama salah.';
+          } else if (e.code == 'requires-recent-login') {
+            errorMessage = 'Sesi telah berakhir. Silakan login kembali.';
+          }
+        }
+
+        _showSnackBar(errorMessage, isError: true);
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
   }

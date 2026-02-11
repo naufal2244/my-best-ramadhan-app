@@ -401,12 +401,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       const SizedBox(height: 8),
-      Text(
-        '$dailyCompleted dari $totalDaily Selesai Hari Ini!',
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF1A1A1A),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '$dailyCompleted dari $totalDaily Selesai Hari Ini!',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF1A1A1A),
+          ),
         ),
       ),
       const SizedBox(height: 16),

@@ -221,7 +221,7 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
                             await context
                                 .read<HabitProvider>()
                                 .syncKhatamHabit(_targetPages);
-                            Navigator.pop(context);
+                            Navigator.pop(context, 'target_updated');
                           }
                         }
                       : (widget.onNext ??

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../onboarding/target_setting_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -26,104 +28,110 @@ class ProfileScreen extends StatelessWidget {
                     bottomRight: Radius.circular(32),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
+                child: Consumer<AuthProvider>(
+                  builder: (context, auth, _) {
+                    final userData = auth.userData;
+                    return Column(
+                      children: [
+                        const SizedBox(height: 20),
 
-                    // Profile Picture
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
+                        // Profile Picture
+                        Container(
+                          width: 100,
+                          height: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 50,
-                        color: Color(0xFF32D74B),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Name
-                    const Text(
-                      'Naufal Naufal Naufal',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Email
-                    Text(
-                      '123@gmail.com',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Redesigned Prominent Stat (Centered & Not Full Width)
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: Colors.white.withOpacity(0.3), width: 1.5),
+                          child: const Icon(
+                            Icons.person,
+                            size: 50,
+                            color: Color(0xFF32D74B),
+                          ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
+
+                        const SizedBox(height: 16),
+
+                        // Name
+                        Text(
+                          userData?.displayName ?? 'User',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // Email
+                        Text(
+                          userData?.email ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        // Redesigned Prominent Stat (Centered & Not Full Width)
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1.5),
+                            ),
+                            child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.menu_book_rounded,
-                                    color: Colors.white, size: 20),
-                                const SizedBox(width: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.menu_book_rounded,
+                                        color: Colors.white, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Target Khatam',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
                                 Text(
-                                  'Target Khatam',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white.withOpacity(0.9),
+                                  '${userData?.targetKhatam ?? 1} KALI',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: 0.5,
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '2 KALI',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
 
-                    const SizedBox(height: 20),
-                  ],
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),

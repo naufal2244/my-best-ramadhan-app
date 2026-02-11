@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../../providers/auth_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -17,7 +20,6 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
 
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -211,7 +213,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                       width: double.infinity,
                       height: 54,
                       child: ElevatedButton(
-                        onPressed: _isLoading ? null : _handleRegister,
+                        onPressed: context.watch<AuthProvider>().isLoading
+                            ? null
+                            : _handleRegister,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF32D74B),
                           foregroundColor: Colors.white,
@@ -220,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: _isLoading
+                        child: context.watch<AuthProvider>().isLoading
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
@@ -327,31 +331,26 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   void _handleRegister() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+      final authProvider = context.read<AuthProvider>();
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        await authProvider.register(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+          _nameController.text.trim(),
+        );
 
-      setState(() => _isLoading = false);
-
-      // Navigate to onboarding
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+        // Navigate to onboarding
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+        }
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Registrasi Gagal: ${e.toString().split('] ').last}",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
     }
-  }
-}
-
-// Placeholder for onboarding screen
-class OnboardingScreen extends StatelessWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text('Onboarding Screen'),
-      ),
-    );
   }
 }

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/habit_provider.dart';
 
 class TargetSettingScreen extends StatefulWidget {
   final bool isEditing;
@@ -17,7 +20,16 @@ class TargetSettingScreen extends StatefulWidget {
 }
 
 class _TargetSettingScreenState extends State<TargetSettingScreen> {
-  int _targetPages = 2;
+  late int _targetPages;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi targetPages dari data user yang ada jika sedang editing
+    final currentTarget =
+        context.read<AuthProvider>().userData?.targetKhatam ?? 2;
+    _targetPages = widget.isEditing ? currentTarget : 2;
+  }
 
   void _updateTarget(int delta) {
     setState(() {
@@ -199,7 +211,19 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: widget.isEditing
-                      ? () => Navigator.pop(context)
+                      ? () async {
+                          // Simpan target baru ke database
+                          final auth = context.read<AuthProvider>();
+                          await auth.updateTargetKhatam(_targetPages);
+
+                          // Sync habit khatam otomatis
+                          if (context.mounted) {
+                            await context
+                                .read<HabitProvider>()
+                                .syncKhatamHabit(_targetPages);
+                            Navigator.pop(context);
+                          }
+                        }
                       : (widget.onNext ??
                           () => Navigator.pushNamed(context, '/onboarding-tips',
                               arguments: _targetPages)),

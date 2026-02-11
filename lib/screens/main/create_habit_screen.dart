@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/habit_provider.dart';
+import '../../models/habit_model.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 /// CREATE HABIT SCREEN
 /// Halaman untuk membuat habit baru
 /// Diakses ketika user tap tombol + di home screen
 class CreateHabitScreen extends StatefulWidget {
-  const CreateHabitScreen({super.key});
+  final HabitModel? habit;
+  const CreateHabitScreen({super.key, this.habit});
 
   @override
   State<CreateHabitScreen> createState() => _CreateHabitScreenState();
@@ -14,15 +19,24 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   final TextEditingController _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  String _selectedType =
-      'harian'; // 'harian' (pilih hari) atau 'mingguan' (pilih frekuensi)
-  List<int> _selectedDays = [
-    0,
-    2,
-    4
-  ]; // Default: Sen, Rab, Jum (0-indexed untuk match HomeScreen)
-  int _targetPerWeek = 3;
+  String _selectedType = 'harian';
+  List<int> _selectedDays = [];
+  int _targetPerWeek = 1; // Default 1 kali sesuai request
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.habit != null) {
+      _nameController.text = widget.habit!.name;
+      _selectedType = widget.habit!.type ?? 'harian';
+      if (_selectedType == 'harian') {
+        _selectedDays = widget.habit!.scheduledDays.map((d) => d - 1).toList();
+      } else {
+        _targetPerWeek = widget.habit!.targetPerWeek ?? 1;
+      }
+    }
+  }
 
   final dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
@@ -40,20 +54,46 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
       setState(() => _isLoading = true);
 
-      // Simulasi delay proses simpan
-      await Future.delayed(const Duration(milliseconds: 600));
+      try {
+        final habitProvider = context.read<HabitProvider>();
 
-      final newHabit = {
-        'id': DateTime.now().millisecondsSinceEpoch,
-        'title': _nameController.text.trim(),
-        'type': _selectedType,
-        'scheduledDays': _selectedType == 'harian' ? _selectedDays : null,
-        'targetPerWeek': _selectedType == 'mingguan' ? _targetPerWeek : null,
-        'completedDates': <int>[], // Kosong untuk habit baru
-      };
+        if (widget.habit != null) {
+          // Mode Edit
+          await habitProvider.updateHabit(
+            widget.habit!.id,
+            _nameController.text.trim(),
+            _selectedType == 'harian'
+                ? _selectedDays.map((d) => d + 1).toList()
+                : [],
+            type: _selectedType,
+            targetPerWeek: _selectedType == 'mingguan' ? _targetPerWeek : null,
+          );
+          Fluttertoast.showToast(msg: "Habit diperbarui!");
+        } else {
+          // Mode Baru
+          await habitProvider.addHabit(
+            _nameController.text.trim(),
+            _selectedType == 'harian'
+                ? _selectedDays.map((d) => d + 1).toList()
+                : [],
+            type: _selectedType,
+            targetPerWeek: _selectedType == 'mingguan' ? _targetPerWeek : null,
+          );
+          Fluttertoast.showToast(msg: "Habit berhasil dibuat!");
+        }
 
-      if (mounted) {
-        Navigator.pop(context, newHabit);
+        if (mounted) {
+          Navigator.pop(context, true);
+        }
+      } catch (e) {
+        if (mounted) {
+          Fluttertoast.showToast(
+            msg: "Gagal membuat habit: $e",
+            backgroundColor: Colors.red,
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
@@ -69,9 +109,9 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           icon: const Icon(Icons.close, color: Color(0xFF1A1A1A)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          'Buat Habit Baru',
-          style: TextStyle(
+        title: Text(
+          widget.habit != null ? 'Edit Habit' : 'Buat Habit Baru',
+          style: const TextStyle(
             color: Color(0xFF1A1A1A),
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -351,7 +391,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               }),
               const SizedBox(width: 32),
               Text(
-                '$_targetPerWeek kali',
+                _targetPerWeek == 7 ? 'Setiap hari' : '$_targetPerWeek kali',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

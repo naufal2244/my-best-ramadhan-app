@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import '../../providers/auth_provider.dart';
 
 /// HALAMAN LOGIN
 /// Ini adalah halaman pertama yang akan muncul setelah splash screen
@@ -36,16 +39,24 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleEmailLogin() async {
     // Validasi form dulu
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
+      final authProvider = context.read<AuthProvider>();
 
-      // Simulasi delay login
-      await Future.delayed(const Duration(seconds: 1));
+      try {
+        await authProvider.login(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
 
-      setState(() => _isLoading = false);
-
-      // Berpindah ke Onboarding Welcome secara langsung
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+        // Berpindah ke Onboarding Welcome secara langsung
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+        }
+      } catch (e) {
+        Fluttertoast.showToast(
+          msg: "Login Gagal: ${e.toString().split('] ').last}",
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+        );
       }
     }
   }
@@ -294,11 +305,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Widget Tombol Login
   Widget _buildLoginButton() {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return SizedBox(
       width: double.infinity,
       height: 54,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleEmailLogin,
+        onPressed: isLoading ? null : _handleEmailLogin,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF32D74B),
           foregroundColor: Colors.white,
@@ -308,7 +321,7 @@ class _LoginScreenState extends State<LoginScreen> {
           elevation: 0,
           shadowColor: const Color(0xFF32D74B).withOpacity(0.3),
         ),
-        child: _isLoading
+        child: isLoading
             ? const SizedBox(
                 height: 20,
                 width: 20,

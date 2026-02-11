@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'main/main_screen.dart'; // Import real MainScreen instead of using placeholder
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({Key? key}) : super(key: key);
@@ -25,10 +28,13 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Navigate to home
+      // Save target khatam to database
+      context.read<AuthProvider>().updateTargetKhatam(_targetPages);
+
+      // Navigate to main screen
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const MainScreen()),
       );
     }
   }
@@ -36,7 +42,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   void _skipToEnd() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      MaterialPageRoute(builder: (context) => const MainScreen()),
     );
   }
 
@@ -747,23 +753,6 @@ class _TipsScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-// Placeholder Home Screen
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-      ),
-      body: const Center(
-        child: Text('Welcome to My Best Ramadhan!'),
       ),
     );
   }

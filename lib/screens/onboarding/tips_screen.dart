@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class TipsScreen extends StatelessWidget {
   final VoidCallback? onNext;
@@ -110,14 +112,19 @@ class TipsScreen extends StatelessWidget {
                 height: 54,
                 child: ElevatedButton(
                   onPressed: onNext ??
-                      () {
+                      () async {
+                        // Simpan target khatam ke database
+                        final authProvider = context.read<AuthProvider>();
+                        await authProvider.updateTargetKhatam(displayTarget);
+
                         // Pindah ke halaman utama (MainScreen)
-                        // Menggunakan pushNamedAndRemoveUntil agar user tidak bisa 'back' ke onboarding lagi
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/main',
-                          (route) => false,
-                        );
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/main',
+                            (route) => false,
+                          );
+                        }
                       },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF32D74B),

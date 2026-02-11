@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import '../../widgets/habit_tutorial_overlay.dart';
+import 'package:provider/provider.dart';
+import '../../providers/habit_provider.dart';
+import '../../providers/auth_provider.dart';
+import 'package:intl/intl.dart';
+import '../../models/habit_model.dart';
 import 'create_habit_screen.dart';
 import 'habit_detail_screen.dart';
-import '../../widgets/habit_tutorial_overlay.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -16,39 +21,31 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<String> _tabs = ['Harian', 'Mingguan', 'Keseluruhan'];
 
   // Unified Habit List
-  List<Map<String, dynamic>> _habits = [
-    {
-      'id': 1,
-      'title': 'Tilawah 5 Halaman',
-      'type': 'harian',
-      'scheduledDays': [0, 2, 4], // Sen, Rab, Jum
-      'targetPerWeek': null,
-      'completedDates': [1, 3, 10],
-    },
-    {
-      'id': 2,
-      'title': 'Duha',
-      'type': 'mingguan',
-      'scheduledDays': null,
-      'targetPerWeek': 3,
-      'completedDates': [1, 5],
-    },
-  ];
-
   bool _showCompleted = false;
   bool _showTutorial = false;
   bool _tutorialShownInThisSession = false; // Add this track to session only
   final dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
-  int get _todayDate {
-    final now = DateTime.now();
-    return now.day > 30 ? 30 : now.day;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      if (authProvider.userData != null) {
+        context
+            .read<HabitProvider>()
+            .fetchHabits(authProvider.userData!.targetKhatam);
+      }
+    });
   }
 
-  bool _isDoneToday(Map<String, dynamic> habit) =>
-      habit['completedDates'].contains(_todayDate);
+  String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-  int get _dailyCompletedCount => _habits.where((h) => _isDoneToday(h)).length;
+  bool _isDoneToday(HabitModel habit) =>
+      habit.completionStatus[_todayKey] ?? false;
+
+  int _getDailyCompletedCount(List<HabitModel> habits) =>
+      habits.where((h) => _isDoneToday(h)).length;
 
   // Navigation Logic
   Future<void> _navToCreate() async {
@@ -57,10 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (context) => const CreateHabitScreen()),
     );
 
-    if (result != null && result is Map<String, dynamic>) {
-      setState(() {
-        _habits.add(result);
-      });
+    if (result == true) {
+      // Refresh data
+      final auth = context.read<AuthProvider>();
+      if (auth.userData != null) {
+        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+      }
 
       // Show tutorial on the very first manual creation of this session
       if (!_tutorialShownInThisSession) {
@@ -87,35 +86,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _navToDetail(Map<String, dynamic> habit) async {
+  Future<void> _navToDetail(HabitModel habit) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => HabitDetailScreen(
-          habitName: habit['title'],
-          habitId: habit['id'].toString(),
-          habitType: habit['type'],
-          scheduledDays: habit['scheduledDays'] != null
-              ? List<int>.from(habit['scheduledDays'])
-              : null,
-          targetPerWeek: habit['targetPerWeek'],
-          // We could pass the whole object if we want
-        ),
+        builder: (context) => HabitDetailScreen(habit: habit),
       ),
     );
 
     if (result == 'delete') {
-      setState(() {
-        _habits.removeWhere((h) => h['id'] == habit['id']);
-      });
-    } else if (result != null && result is Map<String, dynamic>) {
-      // Handle update if needed
-      setState(() {
-        final index = _habits.indexWhere((h) => h['id'] == habit['id']);
-        if (index != -1) {
-          _habits[index] = {..._habits[index], ...result};
-        }
-      });
+      // Refresh data
+      final auth = context.read<AuthProvider>();
+      if (auth.userData != null) {
+        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+      }
     }
   }
 
@@ -136,28 +120,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   automaticallyImplyLeading: false,
                   title: Align(
                     alignment: Alignment.centerLeft,
-                    child: RichText(
-                      text: TextSpan(
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                        children: [
-                          TextSpan(
-                            text: 'Assalamualaikum, ',
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              color: Colors.grey[600],
+                    child: Consumer<AuthProvider>(
+                      builder: (context, auth, _) {
+                        return RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 22,
+                              color: Color(0xFF1A1A1A),
                             ),
+                            children: [
+                              TextSpan(
+                                text: 'Assalamualaikum, ',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    '${auth.userData?.displayName ?? "User"}! 👋',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
-                          const TextSpan(
-                            text: 'Naufal! 👋',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -179,9 +168,24 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 16),
 
                       // Content berdasarkan tab yang dipilih
-                      if (_selectedTab == 'Harian') ..._buildDailyView(),
-                      if (_selectedTab == 'Mingguan') ..._buildWeeklyView(),
-                      if (_selectedTab == 'Keseluruhan') ..._buildMonthlyView(),
+                      Consumer<HabitProvider>(
+                        builder: (context, habitProvider, _) {
+                          final habits = habitProvider.habits;
+                          if (habitProvider.isLoading) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
+
+                          if (_selectedTab == 'Harian')
+                            return Column(children: _buildDailyView(habits));
+                          if (_selectedTab == 'Mingguan')
+                            return Column(children: _buildWeeklyView(habits));
+                          if (_selectedTab == 'Keseluruhan')
+                            return Column(children: _buildMonthlyView(habits));
+
+                          return const SizedBox();
+                        },
+                      ),
 
                       const SizedBox(height: 80),
                     ]),
@@ -297,9 +301,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============ HARIAN VIEW ============
-  List<Widget> _buildDailyView() {
-    final activeHabits = _habits.where((h) => !_isDoneToday(h)).toList();
-    final completedHabits = _habits.where((h) => _isDoneToday(h)).toList();
+  List<Widget> _buildDailyView(List<HabitModel> habits) {
+    final activeHabits = habits.where((h) => !_isDoneToday(h)).toList();
+    final completedHabits = habits.where((h) => _isDoneToday(h)).toList();
+    final totalDaily = habits.length;
+    final dailyCompleted = _getDailyCompletedCount(habits);
 
     return [
       Row(
@@ -315,8 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: FractionallySizedBox(
                 alignment: Alignment.centerLeft,
-                widthFactor:
-                    _habits.isEmpty ? 0 : _dailyCompletedCount / _habits.length,
+                widthFactor: totalDaily == 0 ? 0 : dailyCompleted / totalDaily,
                 child: Container(
                   decoration: BoxDecoration(
                     color: const Color(0xFF32D74B),
@@ -335,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       const SizedBox(height: 8),
       Text(
-        '$_dailyCompletedCount dari ${_habits.length} Selesai Hari Ini!',
+        '$dailyCompleted dari $totalDaily Selesai Hari Ini!',
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
@@ -389,35 +394,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDailyHabitItem(Map<String, dynamic> habit) {
+  Widget _buildDailyHabitItem(HabitModel habit) {
     final isDone = _isDoneToday(habit);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: GestureDetector(
         onTap: () => _navToDetail(habit),
         child: Slidable(
-          key: ValueKey(habit['id']),
+          key: ValueKey(habit.id),
           enabled: !isDone,
           endActionPane: ActionPane(
             motion: const ScrollMotion(),
             extentRatio: 0.3,
-            dismissible: DismissiblePane(
-              onDismissed: () {
-                setState(() {
-                  if (!habit['completedDates'].contains(_todayDate)) {
-                    habit['completedDates'].add(_todayDate);
-                  }
-                });
-              },
-            ),
             children: [
               SlidableAction(
                 onPressed: (context) {
-                  setState(() {
-                    if (!habit['completedDates'].contains(_todayDate)) {
-                      habit['completedDates'].add(_todayDate);
-                    }
-                  });
+                  context
+                      .read<HabitProvider>()
+                      .toggleHabit(habit.id, DateTime.now());
                 },
                 backgroundColor: const Color(0xFF32D74B),
                 foregroundColor: Colors.white,
@@ -444,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    habit['title'],
+                    habit.name,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -464,7 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============ MINGGUAN VIEW ============
-  List<Widget> _buildWeeklyView() {
+  List<Widget> _buildWeeklyView(List<HabitModel> habits) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -476,19 +470,24 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       const SizedBox(height: 16),
-      ..._habits.map((habit) {
-        final List<int> completedThisWeek =
-            (habit['completedDates'] as List<dynamic>)
-                .where((d) => (d as int) <= 7)
-                .map((d) => (d as int) - 1)
-                .cast<int>()
-                .toList();
+      ...habits.map((habit) {
+        // Logic untuk menentukan tanggal-tanggal di minggu ini
+        // Sederhananya kita cek completionStatus untuk 7 hari terakhir
+        final now = DateTime.now();
+        List<bool> weeklyStatus = [];
+        for (int i = 0; i < 7; i++) {
+          final date = now.subtract(Duration(days: now.weekday - 1 - i));
+          final key = DateFormat('yyyy-MM-dd').format(date);
+          weeklyStatus.add(habit.completionStatus[key] ?? false);
+        }
 
-        String subtitle = habit['type'] == 'harian'
-            ? (habit['scheduledDays'] as List)
-                .map((d) => dayNames[d as int])
-                .join(', ')
-            : '${habit['targetPerWeek']} kali seminggu';
+        String subtitle = habit.type == 'harian'
+            ? (habit.scheduledDays.length == 7
+                ? 'Setiap Hari'
+                : habit.scheduledDays.map((d) => dayNames[d - 1]).join(', '))
+            : (habit.targetPerWeek == 7
+                ? 'Setiap Hari'
+                : 'Seminggu ${habit.targetPerWeek} kali');
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 16.0),
@@ -507,7 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(habit['title'],
+                        child: Text(habit.name,
                             style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -524,10 +523,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(7, (index) {
-                      final bool isCompleted =
-                          completedThisWeek.contains(index);
-                      final bool isScheduled = habit['type'] == 'harian' &&
-                          (habit['scheduledDays'] as List).contains(index);
+                      final bool isCompleted = weeklyStatus[index];
+                      final bool isScheduled = habit.type == 'harian' &&
+                          habit.scheduledDays.contains(index + 1);
                       return _buildWeeklyCircle(
                           index, isCompleted, isScheduled, habit);
                     }),
@@ -541,18 +539,15 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
   }
 
-  Widget _buildWeeklyCircle(int index, bool isDone, bool isScheduled, Map h) {
+  Widget _buildWeeklyCircle(
+      int index, bool isDone, bool isScheduled, HabitModel h) {
     return Column(
       children: [
         GestureDetector(
           onTap: () {
-            setState(() {
-              if (isDone) {
-                h['completedDates'].remove(index + 1);
-              } else {
-                h['completedDates'].add(index + 1);
-              }
-            });
+            final now = DateTime.now();
+            final date = now.subtract(Duration(days: now.weekday - 1 - index));
+            context.read<HabitProvider>().toggleHabit(h.id, date);
           },
           child: Container(
             width: 36,
@@ -592,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // ============ KESELURUHAN VIEW ============
-  List<Widget> _buildMonthlyView() {
+  List<Widget> _buildMonthlyView(List<HabitModel> habits) {
     return [
       Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -604,15 +599,26 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       const SizedBox(height: 16),
-      ..._habits.map((habit) {
-        final completedDates = List<int>.from(habit['completedDates']);
-        String subtitle = habit['type'] == 'harian'
-            ? 'Setiap ${(habit['scheduledDays'] as List).map((d) => dayNames[d as int]).join(', ')}'
-            : '${habit['targetPerWeek'] * 4} kali sebulan';
-        String targetText = habit['type'] == 'harian'
-            ? 'Target: Rutin Harian'
-            : 'Target: ${habit['targetPerWeek'] * 4} kali';
-        final percentage = (completedDates.length / 30 * 100).toInt();
+      ...habits.map((habit) {
+        String subtitle = habit.type == 'harian'
+            ? (habit.scheduledDays.length == 7
+                ? 'Setiap Hari'
+                : habit.scheduledDays.map((d) => dayNames[d - 1]).join(', '))
+            : (habit.targetPerWeek == 7
+                ? 'Setiap Hari'
+                : 'Seminggu ${habit.targetPerWeek} kali');
+
+        // Hitung persentase bulan ini
+        final now = DateTime.now();
+        int completedThisMonth = 0;
+        for (var status in habit.completionStatus.entries) {
+          if (status.value &&
+              status.key.startsWith(DateFormat('yyyy-MM').format(now))) {
+            completedThisMonth++;
+          }
+        }
+        final percentage = (completedThisMonth / 30 * 100).toInt();
+        String targetText = 'dari target';
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
@@ -633,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(habit['title'],
+                            Text(habit.name,
                                 style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -671,18 +677,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     spacing: 6,
                     runSpacing: 6,
                     children: List.generate(30, (index) {
-                      final dNum = index + 1;
-                      final isDone = completedDates.contains(dNum);
-                      final isSched = habit['type'] == 'harian' &&
-                          (habit['scheduledDays'] as List).contains(index % 7);
+                      final now = DateTime.now();
+                      final date = DateTime(now.year, now.month, index + 1);
+                      final key = DateFormat('yyyy-MM-dd').format(date);
+                      final isDone = habit.completionStatus[key] ?? false;
+                      final isSched = habit.type == 'harian' &&
+                          habit.scheduledDays.contains(((index + 1) % 7) == 0
+                              ? 7
+                              : (index + 1) % 7); // Simplified logic
+
                       return GestureDetector(
                         onTap: () {
-                          setState(() {
-                            if (isDone)
-                              habit['completedDates'].remove(dNum);
-                            else
-                              habit['completedDates'].add(dNum);
-                          });
+                          context
+                              .read<HabitProvider>()
+                              .toggleHabit(habit.id, date);
                         },
                         child: Container(
                           width: 28,

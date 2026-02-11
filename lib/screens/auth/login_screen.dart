@@ -38,17 +38,14 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
 
-      // TODO: Implementasi login dengan Firebase Auth
-      // Sementara delay 2 detik untuk simulasi
-      await Future.delayed(const Duration(seconds: 2));
+      // Simulasi delay login
+      await Future.delayed(const Duration(seconds: 1));
 
       setState(() => _isLoading = false);
 
-      // Tampilkan pesan sukses
+      // Berpindah ke Onboarding Welcome secara langsung
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login berhasil!')),
-        );
+        Navigator.pushReplacementNamed(context, '/onboarding-welcome');
       }
     }
   }
@@ -57,10 +54,14 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _handleGoogleLogin() async {
     setState(() => _isLoading = true);
 
-    // TODO: Implementasi Google Sign In
-    await Future.delayed(const Duration(seconds: 2));
+    // Simulasi delay
+    await Future.delayed(const Duration(seconds: 1));
 
     setState(() => _isLoading = false);
+
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+    }
   }
 
   @override
@@ -409,8 +410,8 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
               onPressed: () {
-                // TODO: Navigate ke halaman register
-                print('Navigate to Register');
+                // Pindah ke halaman register menggunakan named route
+                Navigator.pushNamed(context, '/register');
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,

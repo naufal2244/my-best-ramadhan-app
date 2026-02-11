@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:my_best_ramadhan_app/screens/splash_screen.dart';
+import 'screens/splash_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/auth/register_screen.dart';
+import 'screens/onboarding/welcome_screen.dart';
+import 'screens/onboarding/target_setting_screen.dart';
+import 'screens/onboarding/tips_screen.dart';
+import 'screens/main/main_screen.dart';
+import 'screens/main/edit_profile_screen.dart';
+// import 'screens/home_screen.dart'; // TODO: buat nanti
 
 /// MAIN.DART
 /// Ini adalah file pertama yang dijalankan saat aplikasi dibuka
@@ -18,10 +26,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       // Nama aplikasi
       title: 'My Best Ramadhan',
-      
+
       // Hilangkan banner "DEBUG" di pojok kanan atas
       debugShowCheckedModeBanner: false,
-      
+
       // Theme aplikasi (warna, font, dll)
       theme: ThemeData(
         // Color scheme utama aplikasi
@@ -30,27 +38,31 @@ class MyApp extends StatelessWidget {
           primary: const Color(0xFF32D74B),
           secondary: const Color(0xFF63E677), // light_green
         ),
-        
+
+        primaryColor: const Color(0xFF32D74B),
+        scaffoldBackgroundColor: Colors.white,
+
         // Gunakan Material 3 (design system terbaru dari Google)
         useMaterial3: true,
-        
-        // Font family (nanti bisa diganti dengan font custom)
-        fontFamily: 'Poppins', // TODO: Tambahkan font Poppins ke pubspec.yaml
-        
+
+        // Font family
+        fontFamily: 'Poppins',
+
         // App bar theme
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF32D74B),
-          foregroundColor: Colors.white,
+          backgroundColor: Colors.white,
+          foregroundColor: Color(0xFF1A1A1A),
           elevation: 0,
           centerTitle: true,
+          iconTheme: IconThemeData(color: Color(0xFF1A1A1A)),
         ),
-        
+
         // Floating action button theme
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: Color(0xFF32D74B),
           foregroundColor: Colors.white,
         ),
-        
+
         // Input decoration theme (untuk TextField)
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
@@ -72,9 +84,22 @@ class MyApp extends StatelessWidget {
           ),
         ),
       ),
-      
-      // Home screen adalah SplashScreen
-      home: const SplashScreen(),
+
+      // Initial route
+      initialRoute: '/',
+
+      // Routes
+      routes: {
+        '/': (context) => const SplashScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/onboarding-welcome': (context) => const WelcomeScreen(),
+        '/onboarding-target': (context) => const TargetSettingScreen(),
+        '/onboarding-tips': (context) => const TipsScreen(),
+        '/main': (context) => const MainScreen(),
+        '/edit-profile': (context) => const EditProfileScreen(),
+        // '/home': (context) => const HomeScreen(), // TODO
+      },
     );
   }
 }

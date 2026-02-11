@@ -23,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // Unified Habit List
   bool _showCompleted = false;
   bool _showTutorial = false;
-  bool _tutorialShownInThisSession = false; // Add this track to session only
   final dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
   @override
@@ -59,23 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
       final auth = context.read<AuthProvider>();
       if (auth.userData != null) {
         context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
-      }
 
-      // Show tutorial on the very first manual creation of this session
-      if (!_tutorialShownInThisSession) {
-        setState(() {
-          _showTutorial = true;
-          _tutorialShownInThisSession = true;
-        });
-      } else {
-        // Only show SnackBar if tutorial is NOT shown
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Habit baru berhasil dibuat! 🎉'),
-            backgroundColor: Color(0xFF32D74B),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        // Show tutorial only if the user hasn't seen it yet
+        if (!auth.userData!.hasSeenTutorial) {
+          setState(() {
+            _showTutorial = true;
+          });
+          // Update status in Firestore
+          auth.setHasSeenTutorial(true);
+        } else {
+          // Only show SnackBar if tutorial is NOT shown
+          if (mounted) {
+            _showSuccessSnackBar('Habit baru berhasil dibuat! 🎉');
+          }
+        }
       }
     }
   }
@@ -100,29 +96,90 @@ class _HomeScreenState extends State<HomeScreen> {
       if (auth.userData != null) {
         context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
       }
+      if (mounted) {
+        _showSuccessSnackBar('Habit berhasil dihapus.');
+      }
+    } else if (result == 'edit') {
+      // Refresh data
+      final auth = context.read<AuthProvider>();
+      if (auth.userData != null) {
+        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+      }
+      if (mounted) {
+        _showSuccessSnackBar('Habit berhasil diperbarui! ✨');
+      }
     }
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: const Color(0xFF32D74B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  void _showUndoSnackBar(String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: CustomScrollView(
-              slivers: [
-                // App Bar
-                SliverAppBar(
-                  floating: true,
-                  backgroundColor: Colors.white,
-                  elevation: 0,
-                  automaticallyImplyLeading: false,
-                  title: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Consumer<AuthProvider>(
-                      builder: (context, auth, _) {
-                        return RichText(
+      body: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          // Jika data user belum siap, tampilkan loading
+          if (auth.userData == null) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          // Trigger fetch habits jika user data sudah ada tapi habit masih kosong
+          final habitProvider = context.read<HabitProvider>();
+          if (habitProvider.habits.isEmpty && !habitProvider.isLoading) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                habitProvider.fetchHabits(auth.userData!.targetKhatam);
+              }
+            });
+          }
+
+          return Stack(
+            children: [
+              SafeArea(
+                child: CustomScrollView(
+                  slivers: [
+                    // App Bar
+                    SliverAppBar(
+                      floating: true,
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      automaticallyImplyLeading: false,
+                      title: Align(
+                        alignment: Alignment.centerLeft,
+                        child: RichText(
                           text: TextSpan(
                             style: const TextStyle(
                               fontSize: 22,
@@ -145,62 +202,67 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                  ),
-                ),
 
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Motivational Quote Card
-                      _buildQuoteCard(),
+                    SliverPadding(
+                      padding:
+                          const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate([
+                          // Motivational Quote Card
+                          _buildQuoteCard(),
 
-                      const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                      // Tab Filter
-                      Row(
-                        children: _tabs.map((tab) => _buildTab(tab)).toList(),
+                          // Tab Filter
+                          Row(
+                            children:
+                                _tabs.map((tab) => _buildTab(tab)).toList(),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Content berdasarkan tab yang dipilih
+                          Consumer<HabitProvider>(
+                            builder: (context, habitProvider, _) {
+                              final habits = habitProvider.habits;
+                              if (habitProvider.isLoading) {
+                                return const Center(
+                                    child: CircularProgressIndicator());
+                              }
+
+                              if (_selectedTab == 'Harian')
+                                return Column(
+                                    children: _buildDailyView(habits));
+                              if (_selectedTab == 'Mingguan')
+                                return Column(
+                                    children: _buildWeeklyView(habits));
+                              if (_selectedTab == 'Keseluruhan')
+                                return Column(
+                                    children: _buildMonthlyView(habits));
+
+                              return const SizedBox();
+                            },
+                          ),
+
+                          const SizedBox(height: 80),
+                        ]),
                       ),
-
-                      const SizedBox(height: 16),
-
-                      // Content berdasarkan tab yang dipilih
-                      Consumer<HabitProvider>(
-                        builder: (context, habitProvider, _) {
-                          final habits = habitProvider.habits;
-                          if (habitProvider.isLoading) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
-
-                          if (_selectedTab == 'Harian')
-                            return Column(children: _buildDailyView(habits));
-                          if (_selectedTab == 'Mingguan')
-                            return Column(children: _buildWeeklyView(habits));
-                          if (_selectedTab == 'Keseluruhan')
-                            return Column(children: _buildMonthlyView(habits));
-
-                          return const SizedBox();
-                        },
-                      ),
-
-                      const SizedBox(height: 80),
-                    ]),
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
 
-          // Tutorial Overlay
-          if (_showTutorial)
-            HabitTutorialOverlay(
-              onDismiss: _dismissTutorial,
-            ),
-        ],
+              // Tutorial Overlay
+              if (_showTutorial)
+                HabitTutorialOverlay(
+                  onDismiss: _dismissTutorial,
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -401,26 +463,69 @@ class _HomeScreenState extends State<HomeScreen> {
       child: GestureDetector(
         onTap: () => _navToDetail(habit),
         child: Slidable(
-          key: ValueKey(habit.id),
-          enabled: !isDone,
-          endActionPane: ActionPane(
-            motion: const ScrollMotion(),
-            extentRatio: 0.3,
-            children: [
-              SlidableAction(
-                onPressed: (context) {
-                  context
-                      .read<HabitProvider>()
-                      .toggleHabit(habit.id, DateTime.now());
-                },
-                backgroundColor: const Color(0xFF32D74B),
-                foregroundColor: Colors.white,
-                icon: Icons.check,
-                label: 'Selesai',
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ],
-          ),
+          key: ValueKey('${habit.id}_${isDone}'),
+          // Geser ke KANAN untuk Selesai (Hanya jika belum selesai)
+          startActionPane: isDone
+              ? null
+              : ActionPane(
+                  motion: const ScrollMotion(),
+                  extentRatio: 0.3,
+                  dismissible: DismissiblePane(
+                    onDismissed: () {
+                      context
+                          .read<HabitProvider>()
+                          .toggleHabit(habit.id, DateTime.now());
+                      _showSuccessSnackBar(
+                          'Alhamdulillah, habit diselesaikan! 🌟');
+                    },
+                  ),
+                  children: [
+                    SlidableAction(
+                      onPressed: (context) {
+                        context
+                            .read<HabitProvider>()
+                            .toggleHabit(habit.id, DateTime.now());
+                        _showSuccessSnackBar(
+                            'Alhamdulillah, habit diselesaikan! 🌟');
+                      },
+                      backgroundColor: const Color(0xFF32D74B),
+                      foregroundColor: Colors.white,
+                      icon: Icons.check,
+                      label: 'Selesai',
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ],
+                ),
+          // Geser ke KIRI untuk Batal (Hanya jika sudah selesai)
+          endActionPane: !isDone
+              ? null
+              : ActionPane(
+                  motion: const ScrollMotion(),
+                  extentRatio: 0.3,
+                  dismissible: DismissiblePane(
+                    onDismissed: () {
+                      context
+                          .read<HabitProvider>()
+                          .toggleHabit(habit.id, DateTime.now());
+                      _showUndoSnackBar('Habit dibatalkan. Semangat ya! 💪');
+                    },
+                  ),
+                  children: [
+                    SlidableAction(
+                      onPressed: (context) {
+                        context
+                            .read<HabitProvider>()
+                            .toggleHabit(habit.id, DateTime.now());
+                        _showUndoSnackBar('Habit dibatalkan. Semangat ya! 💪');
+                      },
+                      backgroundColor: Colors.orange,
+                      foregroundColor: Colors.white,
+                      icon: Icons.undo,
+                      label: 'Batal',
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ],
+                ),
           child: Container(
             padding: const EdgeInsets.all(16),
             width: double.infinity,
@@ -447,8 +552,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                if (!isDone)
-                  Icon(Icons.chevron_left, color: Colors.grey[400], size: 20),
+                Icon(
+                  isDone ? Icons.chevron_left : Icons.chevron_right,
+                  color: Colors.grey[400],
+                  size: 20,
+                ),
               ],
             ),
           ),
@@ -608,18 +716,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? 'Setiap Hari'
                 : 'Seminggu ${habit.targetPerWeek} kali');
 
-        // Hitung persentase bulan ini
-        final now = DateTime.now();
-        int completedThisMonth = 0;
-        for (var status in habit.completionStatus.entries) {
-          if (status.value &&
-              status.key.startsWith(DateFormat('yyyy-MM').format(now))) {
-            completedThisMonth++;
-          }
-        }
-        final percentage = (completedThisMonth / 30 * 100).toInt();
-        String targetText = 'dari target';
-
         return Padding(
           padding: const EdgeInsets.only(bottom: 20.0),
           child: GestureDetector(
@@ -652,23 +748,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     fontWeight: FontWeight.w500)),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text('$percentage%',
-                              style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFF32D74B))),
-                          const SizedBox(height: 4),
-                          Text(targetText,
-                              style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[500],
-                                  fontWeight: FontWeight.w500)),
-                        ],
                       ),
                     ],
                   ),

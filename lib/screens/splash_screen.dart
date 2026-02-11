@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_best_ramadhan_app/screens/auth/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// SPLASH SCREEN
 /// Ini adalah layar pertama yang muncul saat aplikasi dibuka
@@ -47,14 +47,15 @@ class _SplashScreenState extends State<SplashScreen>
     // Mulai animasi
     _animationController.forward();
 
-    // Setelah 3 detik, pindah ke LoginScreen
+    // Setelah 3 detik, cek status login dan pindah halaman
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
-        );
+        final authResult = FirebaseAuth.instance.currentUser;
+        if (authResult != null) {
+          Navigator.of(context).pushReplacementNamed('/main');
+        } else {
+          Navigator.of(context).pushReplacementNamed('/login');
+        }
       }
     });
   }

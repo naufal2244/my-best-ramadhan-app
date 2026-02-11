@@ -27,8 +27,8 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
     super.initState();
     // Inisialisasi targetPages dari data user yang ada jika sedang editing
     final currentTarget =
-        context.read<AuthProvider>().userData?.targetKhatam ?? 2;
-    _targetPages = widget.isEditing ? currentTarget : 2;
+        context.read<AuthProvider>().userData?.targetKhatam ?? 1;
+    _targetPages = widget.isEditing ? currentTarget : 1;
   }
 
   void _updateTarget(int delta) {
@@ -42,8 +42,8 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pagesPerDay = (_targetPages * 20 / 30).toStringAsFixed(1);
-    final pagesPerWeek = (_targetPages * 20 / 4.3).toStringAsFixed(0);
+    final juzPerDay = _targetPages;
+    final totalJuz = _targetPages * 30;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -174,15 +174,15 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
                           child: _buildStatCard(
                             '📅',
                             'Per Hari',
-                            '$pagesPerDay Halaman',
+                            '$juzPerDay Juz',
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: _buildStatCard(
-                            '📊',
-                            'Per Minggu',
-                            '$pagesPerWeek Halaman',
+                            '📖',
+                            'Total Target',
+                            '$totalJuz Juz',
                           ),
                         ),
                       ],

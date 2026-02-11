@@ -49,7 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // Berpindah ke Onboarding Welcome secara langsung
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+          Navigator.pushReplacementNamed(context, '/main');
         }
       } catch (e) {
         Fluttertoast.showToast(
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/onboarding-welcome');
+      Navigator.pushReplacementNamed(context, '/main');
     }
   }
 

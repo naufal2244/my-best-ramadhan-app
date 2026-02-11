@@ -109,6 +109,21 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Update Status Tutorial
+  Future<void> setHasSeenTutorial(bool seen) async {
+    if (_userData == null) return;
+
+    try {
+      await _firestore.collection('users').doc(_userData!.uid).update({
+        'hasSeenTutorial': seen,
+      });
+      _userData = _userData!.copyWith(hasSeenTutorial: seen);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error updating tutorial status: $e");
+    }
+  }
+
   /// Ganti Password
   Future<void> updatePassword(String newPassword) async {
     try {

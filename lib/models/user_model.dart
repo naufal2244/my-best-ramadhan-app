@@ -5,6 +5,7 @@ class UserModel {
   final String? photoUrl;
   final int targetKhatam;
   final DateTime? createdAt;
+  final bool hasSeenTutorial;
 
   UserModel({
     required this.uid,
@@ -13,6 +14,7 @@ class UserModel {
     this.photoUrl,
     this.targetKhatam = 1,
     this.createdAt,
+    this.hasSeenTutorial = false,
   });
 
   /// Konversi dari Map (Firestore) ke Object UserModel
@@ -26,6 +28,7 @@ class UserModel {
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as dynamic).toDate()
           : null,
+      hasSeenTutorial: map['hasSeenTutorial'] ?? false,
     );
   }
 
@@ -38,6 +41,7 @@ class UserModel {
       'photoUrl': photoUrl,
       'targetKhatam': targetKhatam,
       'createdAt': createdAt,
+      'hasSeenTutorial': hasSeenTutorial,
     };
   }
 
@@ -46,6 +50,7 @@ class UserModel {
     String? displayName,
     String? photoUrl,
     int? targetKhatam,
+    bool? hasSeenTutorial,
   }) {
     return UserModel(
       uid: uid,
@@ -54,6 +59,7 @@ class UserModel {
       photoUrl: photoUrl ?? this.photoUrl,
       targetKhatam: targetKhatam ?? this.targetKhatam,
       createdAt: createdAt,
+      hasSeenTutorial: hasSeenTutorial ?? this.hasSeenTutorial,
     );
   }
 }

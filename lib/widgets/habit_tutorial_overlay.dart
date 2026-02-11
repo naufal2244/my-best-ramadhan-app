@@ -17,7 +17,10 @@ class _HabitTutorialOverlayState extends State<HabitTutorialOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  bool _firstHabitCompleted = false;
+
+  // Local states for tutorial interaction
+  bool _example1Done = false;
+  bool _example2Done = true; // Starts as done for "Undo" tutorial
 
   @override
   void initState() {
@@ -122,33 +125,57 @@ class _HabitTutorialOverlayState extends State<HabitTutorialOverlay>
                     ),
 
                     const Text(
-                      'Panduan',
+                      'Panduan Penggunaan',
                       style: TextStyle(
                         color: Color(0xFF1A1A1A),
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Geser kanan pada habit untuk menandai selesai',
-                      textAlign: TextAlign.center,
+                    const SizedBox(height: 24),
+
+                    // Row 1: Swipe Right to Complete
+                    Text(
+                      'Geser kanan untuk tandai Selesai',
                       style: TextStyle(
-                        color: Color(0xFF9E9E9E),
-                        fontSize: 15,
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 32),
-
-                    // Single example - Swipe right to complete
-                    _buildExampleHabit(
-                      title: 'Tilawah 5 Halaman 📖',
-                      icon: Icons.check,
-                      backgroundColor: const Color(0xFF32D74B),
-                      isCompleted: _firstHabitCompleted,
-                      onComplete: () {
+                    const SizedBox(height: 12),
+                    _buildTutorialItem(
+                      title: 'Shalat Dhuha',
+                      isDone: _example1Done,
+                      swipeRight: true,
+                      onSwipe: () {
                         setState(() {
-                          _firstHabitCompleted = true;
+                          _example1Done = !_example1Done;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+                    const Divider(),
+                    const SizedBox(height: 24),
+
+                    // Row 2: Swipe Left to Undo
+                    Text(
+                      'Geser kiri untuk Membatalkan',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTutorialItem(
+                      title: 'Shalat Tahajud',
+                      isDone: _example2Done,
+                      swipeRight: false,
+                      onSwipe: () {
+                        setState(() {
+                          _example2Done = !_example2Done;
                         });
                       },
                     ),
@@ -189,43 +216,59 @@ class _HabitTutorialOverlayState extends State<HabitTutorialOverlay>
     );
   }
 
-  Widget _buildExampleHabit({
+  Widget _buildTutorialItem({
     required String title,
-    required IconData icon,
-    required Color backgroundColor,
-    required bool isCompleted,
-    required VoidCallback onComplete,
-    bool isLeftSwipe = false,
+    required bool isDone,
+    required bool swipeRight,
+    required VoidCallback onSwipe,
   }) {
     return Slidable(
-      key: ValueKey(title),
-      enabled: !isCompleted,
-      endActionPane: ActionPane(
-        motion: const ScrollMotion(),
-        extentRatio: 0.3,
-        dismissible: DismissiblePane(
-          onDismissed: onComplete,
-        ),
-        children: [
-          SlidableAction(
-            onPressed: (context) => onComplete(),
-            backgroundColor: backgroundColor,
-            foregroundColor: Colors.white,
-            icon: icon,
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ],
-      ),
-      startActionPane: null,
+      key: ValueKey('${title}_$isDone'),
+      // Swipe Right for Done (if swipeRight is true and it's not done)
+      startActionPane: swipeRight && !isDone
+          ? ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.3,
+              dismissible: DismissiblePane(onDismissed: onSwipe),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => onSwipe(),
+                  backgroundColor: const Color(0xFF32D74B),
+                  foregroundColor: Colors.white,
+                  icon: Icons.check,
+                  label: 'Selesai',
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ],
+            )
+          : null,
+      // Swipe Left for Undo (if swipeRight is false and it's done)
+      endActionPane: !swipeRight && isDone
+          ? ActionPane(
+              motion: const ScrollMotion(),
+              extentRatio: 0.3,
+              dismissible: DismissiblePane(onDismissed: onSwipe),
+              children: [
+                SlidableAction(
+                  onPressed: (_) => onSwipe(),
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  icon: Icons.undo,
+                  label: 'Batal',
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ],
+            )
+          : null,
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(16),
+        width: double.infinity,
         decoration: BoxDecoration(
-          color:
-              isCompleted ? const Color(0xFFE8F9EC) : const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(16),
+          color: isDone ? const Color(0xFFE8F9EC) : const Color(0xFFF5F5F5),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isCompleted
-                ? const Color(0xFF32D74B).withOpacity(0.5)
+            color: isDone
+                ? const Color(0xFF32D74B).withOpacity(0.3)
                 : Colors.transparent,
             width: 1,
           ),
@@ -236,15 +279,15 @@ class _HabitTutorialOverlayState extends State<HabitTutorialOverlay>
               child: Text(
                 title,
                 style: TextStyle(
-                  color: const Color(0xFF1A1A1A),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  color: const Color(0xFF1A1A1A),
+                  decoration: isDone ? TextDecoration.lineThrough : null,
                 ),
               ),
             ),
             Icon(
-              Icons.chevron_left,
+              isDone ? Icons.chevron_left : Icons.chevron_right,
               color: Colors.grey[400],
               size: 20,
             ),

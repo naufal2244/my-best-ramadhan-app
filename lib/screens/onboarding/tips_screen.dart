@@ -18,6 +18,11 @@ class TipsScreen extends StatelessWidget {
     final int displayTarget = targetPages ??
         (ModalRoute.of(context)?.settings.arguments as int? ?? 1);
 
+    // Perhitungan dinamis berdasarkan target
+    final int juzPerDay = displayTarget;
+    final int pagesPerDay = juzPerDay * 20;
+    final int pagesPerPrayer = juzPerDay * 4;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -70,35 +75,35 @@ class TipsScreen extends StatelessWidget {
                 child: ListView(
                   children: [
                     _buildTipCard(
-                      icon: '🌅',
-                      color: const Color(0xFFFFF3E0),
-                      title: 'Setelah Subuh',
+                      icon: '📖',
+                      color: const Color(0xFFE8F9EC),
+                      title: 'Target Harian',
                       description:
-                          'Baca 3 halaman setelah shalat Subuh ketika pikiran masih fresh',
+                          'Targetmu adalah membaca $juzPerDay Juz ($pagesPerDay halaman) setiap hari selama bulan Ramadhan.',
                     ),
                     const SizedBox(height: 16),
                     _buildTipCard(
                       icon: '🕌',
                       color: const Color(0xFFE3F2FD),
-                      title: 'Setelah Tarawih',
+                      title: 'Setiap Selesai Shalat',
                       description:
-                          'Baca 3 halaman setelah shalat Tarawih untuk melengkapi tilawah harian',
+                          'Cukup baca $pagesPerPrayer halaman setiap selesai shalat fardhu untuk mencicil target harianmu.',
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTipCard(
+                      icon: '🌅',
+                      color: const Color(0xFFFFF3E0),
+                      title: 'Manajemen Waktu',
+                      description:
+                          'Pikiran lebih fresh setelah Subuh. Gunakan waktu ini untuk memulai tilawah lebih awal.',
                     ),
                     const SizedBox(height: 16),
                     _buildTipCard(
                       icon: '🌙',
                       color: const Color(0xFFF3E5F5),
-                      title: 'Sebelum Tidur',
+                      title: 'Evaluasi Malam',
                       description:
-                          'Baca 3 halaman sebelum tidur sebagai penutup hari yang berkah',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTipCard(
-                      icon: '💚',
-                      color: const Color(0xFFE8F9EC),
-                      title: 'Konsisten & Ikhlas',
-                      description:
-                          'Yang terpenting adalah konsistensi dan keikhlasan dalam beribadah',
+                          'Gunakan waktu sebelum tidur untuk melengkapi jika ada target halaman yang terlewat.',
                     ),
                   ],
                 ),

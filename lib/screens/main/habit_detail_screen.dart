@@ -65,7 +65,7 @@ class HabitDetailScreen extends StatelessWidget {
                     );
                     if (result == true && context.mounted) {
                       Navigator.pop(
-                          context, 'update'); // Pass result back to HomeScreen
+                          context, 'edit'); // Pass result back to HomeScreen
                     }
                   },
                 ),

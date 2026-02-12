@@ -46,23 +46,14 @@ class _FeedScreenState extends State<FeedScreen> {
                 floating: true,
                 backgroundColor: Colors.white,
                 elevation: 0,
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Feed',
-                          style: TextStyle(
-                            fontSize: 28,
-                            color: Color(0xFF1A1A1A),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                centerTitle: true,
+                title: const Text(
+                  'Feed',
+                  style: TextStyle(
+                    fontSize: 24,
+                    color: Color(0xFF1A1A1A),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(60),

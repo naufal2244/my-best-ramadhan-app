@@ -34,6 +34,9 @@ dependencies:
   
   # Utilities
   url_launcher: ^6.2.4
+  flutter_local_notifications: ^20.0.0
+  timezone: ^0.10.1
+  flutter_timezone: ^5.0.1
 
 dev_dependencies:
   flutter_test:
@@ -43,7 +46,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   
-  # Uncomment setelah kamu punya asset
-  # assets:
-  #   - assets/images/
-  #   - assets/fonts/
+  assets:
+    - assets/images/

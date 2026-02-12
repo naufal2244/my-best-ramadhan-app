@@ -27,6 +27,9 @@ class FeedProvider with ChangeNotifier {
           .map((doc) => ArticleModel.fromMap(doc.id, doc.data()))
           .toList();
 
+      // Acak urutan artikel untuk variasi
+      _articles.shuffle();
+
       await fetchBookmarks();
     } catch (e) {
       debugPrint("Error fetching articles: $e");

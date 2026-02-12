@@ -8,6 +8,10 @@ import 'package:intl/intl.dart';
 import '../../models/habit_model.dart';
 import 'create_habit_screen.dart';
 import 'habit_detail_screen.dart';
+import '../../services/notification_service.dart';
+import '../../providers/notification_provider.dart';
+import '../../models/quote_model.dart';
+import 'dart:math' as math;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -34,8 +38,111 @@ class _HomeScreenState extends State<HomeScreen> {
         context
             .read<HabitProvider>()
             .fetchHabits(authProvider.userData!.targetKhatam);
+
+        // CEK IZIN NOTIFIKASI
+        _checkNotificationPermission();
+
+        // FETCH QUOTES FOR HOME SCREEN
+        final notifProvider = context.read<NotificationProvider>();
+        if (notifProvider.quotes.isEmpty) {
+          notifProvider.fetchAndScheduleNotifications();
+        }
       }
     });
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    // Tunggu sebentar agar transisi layar selesai dan user sudah melihat home
+    await Future.delayed(const Duration(seconds: 3));
+
+    // Cek ke sistem apakah notifikasi diizinkan
+    final bool isEnabled =
+        await NotificationService().areNotificationsEnabled();
+
+    if (!isEnabled && mounted) {
+      _showNotificationReminderDialog();
+    }
+  }
+
+  void _showNotificationReminderDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Icon(Icons.notifications_active_outlined,
+                size: 60, color: Color(0xFF32D74B)),
+            const SizedBox(height: 16),
+            const Text(
+              'Notifikasi Belum Aktif',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Aktifkan notifikasi untuk mendapatkan renungan harian dan pengingat ibadah tepat waktu.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF757575),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  NotificationService().requestPermissions();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF32D74B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Aktifkan Sekarang',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Nanti Saja',
+                style: TextStyle(color: Colors.grey[600]),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
   }
 
   String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -177,32 +284,28 @@ class _HomeScreenState extends State<HomeScreen> {
                       backgroundColor: Colors.white,
                       elevation: 0,
                       automaticallyImplyLeading: false,
-                      title: Align(
-                        alignment: Alignment.centerLeft,
-                        child: RichText(
-                          text: TextSpan(
+                      centerTitle: false,
+                      title: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Assalamualaikum,',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.normal,
+                              color: Color(0xFF757575), // Colors.grey[600]
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${auth.userData?.displayName ?? "User"}! 👋',
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
                               color: Color(0xFF1A1A1A),
                             ),
-                            children: [
-                              TextSpan(
-                                text: 'Assalamualaikum, ',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                              TextSpan(
-                                text:
-                                    '${auth.userData?.displayName ?? "User"}! 👋',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
+                        ],
                       ),
                     ),
 
@@ -268,69 +371,88 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuoteCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF32D74B), Color(0xFF63E677)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF32D74B).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text('🌙', style: TextStyle(fontSize: 20)),
+    return Consumer<NotificationProvider>(
+      builder: (context, notifProvider, _) {
+        final quotes = notifProvider.quotes;
+
+        // Pilih quote secara random jika ada
+        QuoteModel? randomQuote;
+        if (quotes.isNotEmpty) {
+          randomQuote = quotes[math.Random().nextInt(quotes.length)];
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF32D74B), Color(0xFF63E677)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF32D74B).withOpacity(0.3),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Ramadhan Hari ke-12',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      randomQuote?.type == 'hadith' ? '🌙' : '📖',
+                      style: const TextStyle(fontSize: 20),
+                    ),
                   ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Ramadhan Hari ke-12',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                randomQuote != null
+                    ? '"${randomQuote.content}"'
+                    : '"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Qur\'an"',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.95),
+                  fontSize: 14,
+                  height: 1.5,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                randomQuote != null
+                    ? '— ${randomQuote.source}'
+                    : '— QS. Al-Baqarah: 185',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.8),
+                  fontSize: 12,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            '"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Qur\'an"',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.95),
-              fontSize: 14,
-              height: 1.5,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '— QS. Al-Baqarah: 185',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

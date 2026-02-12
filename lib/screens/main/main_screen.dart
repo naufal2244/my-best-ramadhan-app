@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
 import 'feed_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
@@ -12,6 +15,22 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 1; // Start at Home (middle tab)
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    final notificationProvider = context.read<NotificationProvider>();
+
+    // Request permissions
+    await NotificationService().requestPermissions();
+
+    // Fetch quotes and schedule
+    await notificationProvider.fetchAndScheduleNotifications();
+  }
 
   final List<Widget> _screens = [
     const FeedScreen(),

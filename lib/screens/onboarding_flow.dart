@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../services/notification_service.dart';
 import 'main/main_screen.dart'; // Import real MainScreen instead of using placeholder
 
 class OnboardingFlow extends StatefulWidget {
@@ -14,6 +15,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _targetPages = 1; // Default target
+  final int _totalPages = 4; // Updated to include notification priming screen
 
   @override
   void dispose() {
@@ -22,7 +24,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 
   void _nextPage() {
-    if (_currentPage < 2) {
+    if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
@@ -39,13 +41,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     }
   }
 
-  void _skipToEnd() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,23 +48,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       body: SafeArea(
         child: Column(
           children: [
-            // Skip button
-            if (_currentPage < 2)
-              Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: _skipToEnd,
-                  child: const Text(
-                    'Lewati',
-                    style: TextStyle(
-                      color: Color(0xFF9E9E9E),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-
             // Page content
             Expanded(
               child: PageView(
@@ -85,6 +63,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                     onNext: _nextPage,
                     targetPages: _targetPages,
                   ),
+                  _NotificationPrimingScreen(onNext: _nextPage),
                 ],
               ),
             ),
@@ -95,7 +74,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  3,
+                  _totalPages,
                   (index) => _buildPageIndicator(index),
                 ),
               ),
@@ -759,6 +738,296 @@ class _TipsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// Screen 4: Notification Priming
+class _NotificationPrimingScreen extends StatefulWidget {
+  final VoidCallback onNext;
+
+  const _NotificationPrimingScreen({required this.onNext});
+
+  @override
+  State<_NotificationPrimingScreen> createState() =>
+      _NotificationPrimingScreenState();
+}
+
+class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleEnableNotifications() async {
+    // Import notification service
+    final notificationService = NotificationService();
+    await notificationService.requestPermissions();
+
+    // Proceed to main screen
+    widget.onNext();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+
+          // Main content - Scrollable to avoid overflow
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // Bell icon with animation
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 1500),
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        builder: (context, value, child) {
+                          return Transform.rotate(
+                            angle: value * 0.5 - 0.25,
+                            child: Container(
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF32D74B),
+                                    Color(0xFF63E677)
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF32D74B)
+                                        .withOpacity(0.3),
+                                    blurRadius: 30,
+                                    offset: const Offset(0, 15),
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.notifications_active_rounded,
+                                size: 60,
+                                color: Colors.white,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Main title
+                      const Text(
+                        'Yuk, izinkan notifikasi biar dapat renungan harian dari aplikasi!',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                          height: 1.4,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Alert Screenshot with overlay
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Screenshot image
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.asset(
+                              'assets/images/AlertScreenshot.png',
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // "Manfaat yang didapat" section title
+                      const Text(
+                        'Manfaat yang didapat!',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Notifikasi renungan harian',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF1A1A1A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Notification Screenshot
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/images/renunganScreenshot.png',
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Benefits list
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F9EC),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildBenefitItem(
+                              '📖',
+                              'Ayat Al-Qur\'an harian',
+                            ),
+                            const SizedBox(height: 12),
+                            _buildBenefitItem(
+                              '🌙',
+                              'Hadits pilihan setiap hari',
+                            ),
+                            
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Action buttons - Fixed at bottom
+          FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                // Primary button
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: _handleEnableNotifications,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF32D74B),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_rounded, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Ya, Saya Mau',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Skip button
+                TextButton(
+                  onPressed: widget.onNext,
+                  child: Text(
+                    'Nanti Saja',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 48),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBenefitItem(String emoji, String text) {
+    return Row(
+      children: [
+        Text(
+          emoji,
+          style: const TextStyle(fontSize: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[800],
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

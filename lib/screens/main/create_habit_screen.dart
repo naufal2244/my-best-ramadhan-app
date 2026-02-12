@@ -24,6 +24,17 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   int _targetPerWeek = 1; // Default 1 kali sesuai request
   bool _isLoading = false;
 
+  // Random Placeholder
+  String _randomPlaceholder = 'Misal: Tilawah 5 Halaman';
+  final List<String> _placeholderExamples = [
+    'Misal: Tilawah 5 Halaman',
+    'Misal: Shalat Duha 4 Rakaat',
+    'Misal: Sedekah Subuh',
+    'Misal: Baca 1 Hadits',
+    'Misal: Hafalan 1 Ayat',
+    'Misal: Olahraga Ringan',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +46,10 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       } else {
         _targetPerWeek = widget.habit!.targetPerWeek ?? 1;
       }
+    } else {
+      // Pick a random placeholder only for NEW habits
+      _randomPlaceholder = _placeholderExamples[
+          DateTime.now().millisecond % _placeholderExamples.length];
     }
   }
 
@@ -240,7 +255,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     return TextFormField(
       controller: _nameController,
       decoration: InputDecoration(
-        hintText: 'Misal: Tilawah 5 Halaman',
+        hintText: _randomPlaceholder,
         hintStyle: TextStyle(color: Colors.grey[400]),
         filled: true,
         fillColor: const Color(0xFFF5F5F5),

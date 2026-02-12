@@ -4,12 +4,11 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/feed_provider.dart';
+import 'providers/notification_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/register_screen.dart';
-import 'screens/onboarding/welcome_screen.dart';
-import 'screens/onboarding/target_setting_screen.dart';
-import 'screens/onboarding/tips_screen.dart';
+import 'screens/onboarding_flow.dart';
 import 'screens/main/main_screen.dart';
 import 'screens/main/edit_profile_screen.dart';
 // import 'screens/home_screen.dart'; // TODO: buat nanti
@@ -35,6 +34,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HabitProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
+        ChangeNotifierProvider(
+            create: (_) => NotificationProvider()..initialize()),
       ],
       child: MaterialApp(
         // Nama aplikasi
@@ -106,9 +107,9 @@ class MyApp extends StatelessWidget {
           '/': (context) => const SplashScreen(),
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
-          '/onboarding-welcome': (context) => const WelcomeScreen(),
-          '/onboarding-target': (context) => const TargetSettingScreen(),
-          '/onboarding-tips': (context) => const TipsScreen(),
+          '/onboarding-welcome': (context) => const OnboardingFlow(),
+          '/onboarding-target': (context) => const OnboardingFlow(),
+          '/onboarding-tips': (context) => const OnboardingFlow(),
           '/main': (context) => const MainScreen(),
           '/edit-profile': (context) => const EditProfileScreen(),
           // '/home': (context) => const HomeScreen(), // TODO

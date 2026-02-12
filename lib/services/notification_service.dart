@@ -3,6 +3,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:app_settings/app_settings.dart';
+import 'dart:io';
 import '../models/quote_model.dart';
 
 class NotificationService {
@@ -51,20 +54,66 @@ class NotificationService {
     );
   }
 
-  Future<void> requestPermissions() async {
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
+  Future<bool> requestPermissions() async {
+    debugPrint("🔔 Memulai requestPermissions...");
+    // 1. Cek status izin saat ini menggunakan permission_handler
+    PermissionStatus status = await Permission.notification.status;
+    debugPrint("🔔 Status awal: $status");
 
-    await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    if (status.isPermanentlyDenied) {
+      debugPrint("🔔 Status permanen ditolak, membuka settings notifikasi...");
+      await AppSettings.openAppSettings(type: AppSettingsType.notification);
+      return false;
+    } else if (status.isDenied || status.isLimited || status.isRestricted) {
+      debugPrint("🔔 Status denied/limited, meminta izin native...");
+
+      // Catat waktu mulai request untuk mendeteksi silent-failure
+      final DateTime startTime = DateTime.now();
+      status = await Permission.notification.request();
+      final Duration duration = DateTime.now().difference(startTime);
+
+      debugPrint(
+          "🔔 Status setelah request: $status (Durasi: ${duration.inMilliseconds}ms)");
+
+      // Jika durasi sangat singkat (< 250ms) dan status tetap denied,
+      // ini indikasi kuat OS membisu (silent failure) karena user sudah pernah menolak.
+      if (status.isDenied && duration.inMilliseconds < 250) {
+        debugPrint(
+            "🔔 Deteksi OS membisu (silent block). Membuka settings notifikasi...");
+        await AppSettings.openAppSettings(type: AppSettingsType.notification);
+        return false;
+      }
+
+      // Jika user baru saja klik "Don't Allow" secara manual (sehingga status jadi permanentlyDenied),
+      // kita JANGAN buka settings. Hormati pilihan user saat itu.
+      if (status.isPermanentlyDenied) {
+        debugPrint(
+            "🔔 User baru saja klik 'Don't Allow'. Tidak membuka settings.");
+        return false;
+      }
+    } else {
+      debugPrint("🔔 Status sudah granted atau lainnya: $status");
+      // Jika sudah granted, panggil saja request bawaan untuk memastikan channel terdaftar
+      if (Platform.isAndroid) {
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()
+            ?.requestNotificationsPermission();
+      } else if (Platform.isIOS) {
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>()
+            ?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+      }
+    }
+
+    final finalStatus = await Permission.notification.isGranted;
+    debugPrint("🔔 Hasil akhir isGranted: $finalStatus");
+    return finalStatus;
   }
 
   Future<void> cancelAllNotifications() async {
@@ -132,7 +181,7 @@ class NotificationService {
             iOS: const DarwinNotificationDetails(),
           ),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          matchDateTimeComponents: DateTimeComponents.time,
+          // HAPUS matchDateTimeComponents agar tidak muncul 3x berbarengan
         );
 
         quoteIndex++;
@@ -198,14 +247,8 @@ class NotificationService {
   }
 
   Future<bool> areNotificationsEnabled() async {
-    final bool? androidEnabled = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.areNotificationsEnabled();
-
-    // Untuk iOS bisa dicek lewat resolvePlatformSpecificImplementation juga jika perlu
-    // Namun pengecekan Android 13+ adalah yang paling kritis saat ini
-    return androidEnabled ?? false;
+    // Menggunakan permission_handler untuk pengecekan yang lebih konsisten di Android & iOS
+    return await Permission.notification.isGranted;
   }
 
   Future<void> checkPendingNotifications() async {

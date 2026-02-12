@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/notification_provider.dart';
-import '../../services/notification_service.dart';
 import 'feed_screen.dart';
 import 'home_screen.dart';
 import 'profile_screen.dart';
@@ -24,9 +23,6 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _initNotifications() async {
     final notificationProvider = context.read<NotificationProvider>();
-
-    // Request permissions
-    await NotificationService().requestPermissions();
 
     // Fetch quotes and schedule
     await notificationProvider.fetchAndScheduleNotifications();

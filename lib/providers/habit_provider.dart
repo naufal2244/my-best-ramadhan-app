@@ -16,6 +16,8 @@ class HabitProvider with ChangeNotifier {
 
   /// Ambil semua habit user
   Future<void> fetchHabits(int targetKhatam) async {
+    if (_isLoading) return; // Mencegah pemanggilan ganda/paralel
+
     final user = _auth.currentUser;
     if (user == null) return;
 

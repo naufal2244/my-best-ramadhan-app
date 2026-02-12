@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'onboarding_flow.dart';
+import '../services/notification_service.dart';
 
 /// SPLASH SCREEN
 /// Ini adalah layar pertama yang muncul saat aplikasi dibuka
-/// Biasanya menampilkan logo dan loading indicator
-/// Setelah 2-3 detik, akan pindah ke LoginScreen
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -28,33 +28,41 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1500),
     );
 
-    // Animasi fade in (dari transparan ke terlihat)
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
     );
 
-    // Animasi scale (dari kecil ke besar)
     _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.elasticOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
     );
 
     // Mulai animasi
     _animationController.forward();
 
-    // Setelah 3 detik, cek status login dan pindah halaman
-    Future.delayed(const Duration(seconds: 3), () {
+    // LOGIKA: Cek Login Status dulu, baru Cek Izin Notifikasi
+    Future.delayed(const Duration(seconds: 3), () async {
       if (mounted) {
         final authResult = FirebaseAuth.instance.currentUser;
-        if (authResult != null) {
-          Navigator.of(context).pushReplacementNamed('/main');
-        } else {
+
+        if (authResult == null) {
+          // 1. BELUM LOGIN: Harus ke halaman Login dulu
           Navigator.of(context).pushReplacementNamed('/login');
+        } else {
+          // 2. SUDAH LOGIN: Cek apakah izin notifikasi aktif di HP ini?
+          final bool isEnabled =
+              await NotificationService().areNotificationsEnabled();
+
+          if (isEnabled) {
+            // Sudah aktif -> Langsung ke Home
+            Navigator.of(context).pushReplacementNamed('/main');
+          } else {
+            // Belum aktif -> Lempar ke halaman "Yuk Izinkan" (Onboarding index 3)
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const OnboardingFlow(initialPage: 3),
+              ),
+            );
+          }
         }
       }
     });
@@ -70,13 +78,9 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        // Gradient background dari primary green ke light green
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF32D74B), // primary_green
-              Color(0xFF63E677), // light_green
-            ],
+            colors: [Color(0xFF32D74B), Color(0xFF63E677)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -85,64 +89,43 @@ class _SplashScreenState extends State<SplashScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Logo dengan animasi
               AnimatedBuilder(
                 animation: _animationController,
                 builder: (context, child) {
                   return FadeTransition(
                     opacity: _fadeAnimation,
-                    child: ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: child,
-                    ),
+                    child:
+                        ScaleTransition(scale: _scaleAnimation, child: child),
                   );
                 },
                 child: _buildLogo(),
               ),
-
               const SizedBox(height: 24),
-
-              // Nama aplikasi
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: const Text(
-                  'My Best Ramadhan',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
-                  ),
+              const Text(
+                'My Best Ramadhan',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // Tagline
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: const Text(
-                  'Ramadhan Terbaik Dimulai Dari Sini',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+              const Text(
+                'Ramadhan Terbaik Dimulai Dari Sini',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-
               const SizedBox(height: 60),
-
-              // Loading indicator
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: const SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
+              const SizedBox(
+                width: 40,
+                height: 40,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
             ],
@@ -152,7 +135,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  /// Widget Logo
   Widget _buildLogo() {
     return Container(
       width: 140,

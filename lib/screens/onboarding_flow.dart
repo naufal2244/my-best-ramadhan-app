@@ -5,17 +5,25 @@ import '../services/notification_service.dart';
 import 'main/main_screen.dart'; // Import real MainScreen instead of using placeholder
 
 class OnboardingFlow extends StatefulWidget {
-  const OnboardingFlow({Key? key}) : super(key: key);
+  final int initialPage;
+  const OnboardingFlow({Key? key, this.initialPage = 0}) : super(key: key);
 
   @override
   State<OnboardingFlow> createState() => _OnboardingFlowState();
 }
 
 class _OnboardingFlowState extends State<OnboardingFlow> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
+  late PageController _pageController;
+  late int _currentPage;
   int _targetPages = 1; // Default target
   final int _totalPages = 4; // Updated to include notification priming screen
+
+  @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialPage;
+    _pageController = PageController(initialPage: widget.initialPage);
+  }
 
   @override
   void dispose() {
@@ -23,7 +31,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     super.dispose();
   }
 
-  void _nextPage() {
+  Future<void> _nextPage() async {
     if (_currentPage < _totalPages - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
@@ -31,13 +39,15 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       );
     } else {
       // Save target khatam to database
-      context.read<AuthProvider>().updateTargetKhatam(_targetPages);
+      await context.read<AuthProvider>().updateTargetKhatam(_targetPages);
 
       // Navigate to main screen
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      }
     }
   }
 
@@ -103,7 +113,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
 // Screen 1: Welcome
 class _WelcomeScreen extends StatefulWidget {
-  final VoidCallback onNext;
+  final Future<void> Function() onNext;
 
   const _WelcomeScreen({required this.onNext});
 
@@ -282,7 +292,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
 
 // Screen 2: Target Setting
 class _TargetSettingScreen extends StatefulWidget {
-  final VoidCallback onNext;
+  final Future<void> Function() onNext;
   final Function(int) onTargetChanged;
 
   const _TargetSettingScreen({
@@ -562,7 +572,7 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
 
 // Screen 3: Tips
 class _TipsScreen extends StatelessWidget {
-  final VoidCallback onNext;
+  final Future<void> Function() onNext;
   final int targetPages;
 
   const _TipsScreen({
@@ -744,7 +754,7 @@ class _TipsScreen extends StatelessWidget {
 
 // Screen 4: Notification Priming
 class _NotificationPrimingScreen extends StatefulWidget {
-  final VoidCallback onNext;
+  final Future<void> Function() onNext;
 
   const _NotificationPrimingScreen({required this.onNext});
 
@@ -787,13 +797,26 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
     super.dispose();
   }
 
-  Future<void> _handleEnableNotifications() async {
-    // Import notification service
-    final notificationService = NotificationService();
-    await notificationService.requestPermissions();
+  bool _isProcessing = false;
 
-    // Proceed to main screen
-    widget.onNext();
+  Future<void> _handleEnableNotifications() async {
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final notificationService = NotificationService();
+      final bool isGranted = await notificationService.requestPermissions();
+
+      if (isGranted) {
+        // Hanya lanjut jika sudah benar-benar diizinkan
+        await widget.onNext();
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+      }
+    }
   }
 
   @override
@@ -938,7 +961,6 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                               '🌙',
                               'Hadits pilihan setiap hari',
                             ),
-                            
                           ],
                         ),
                       ),
@@ -987,9 +1009,18 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Skip button
                 TextButton(
-                  onPressed: widget.onNext,
+                  onPressed: () async {
+                    if (_isProcessing) return;
+                    setState(() => _isProcessing = true);
+                    try {
+                      await widget.onNext();
+                    } finally {
+                      if (mounted) {
+                        setState(() => _isProcessing = false);
+                      }
+                    }
+                  },
                   child: Text(
                     'Nanti Saja',
                     style: TextStyle(

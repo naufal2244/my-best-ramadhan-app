@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/notification_service.dart';
+import '../onboarding_flow.dart';
 
 /// HALAMAN LOGIN
 /// Ini adalah halaman pertama yang akan muncul setelah splash screen
@@ -47,9 +49,22 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordController.text.trim(),
         );
 
-        // Berpindah ke Onboarding Welcome secara langsung
+        // Syunkronkan dengan logika Splash: Cek Izin Notifikasi setelah login
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/main');
+          final bool isEnabled =
+              await NotificationService().areNotificationsEnabled();
+
+          if (isEnabled) {
+            Navigator.pushReplacementNamed(context, '/main');
+          } else {
+            // Belum aktif -> Lempar ke halaman "Yuk Izinkan"
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OnboardingFlow(initialPage: 3),
+              ),
+            );
+          }
         }
       } catch (e) {
         Fluttertoast.showToast(

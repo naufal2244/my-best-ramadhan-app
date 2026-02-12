@@ -39,9 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
             .read<HabitProvider>()
             .fetchHabits(authProvider.userData!.targetKhatam);
 
-        // CEK IZIN NOTIFIKASI
-        _checkNotificationPermission();
-
         // FETCH QUOTES FOR HOME SCREEN
         final notifProvider = context.read<NotificationProvider>();
         if (notifProvider.quotes.isEmpty) {
@@ -49,100 +46,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       }
     });
-  }
-
-  Future<void> _checkNotificationPermission() async {
-    // Tunggu sebentar agar transisi layar selesai dan user sudah melihat home
-    await Future.delayed(const Duration(seconds: 3));
-
-    // Cek ke sistem apakah notifikasi diizinkan
-    final bool isEnabled =
-        await NotificationService().areNotificationsEnabled();
-
-    if (!isEnabled && mounted) {
-      _showNotificationReminderDialog();
-    }
-  }
-
-  void _showNotificationReminderDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 50,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Icon(Icons.notifications_active_outlined,
-                size: 60, color: Color(0xFF32D74B)),
-            const SizedBox(height: 16),
-            const Text(
-              'Notifikasi Belum Aktif',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Aktifkan notifikasi untuk mendapatkan renungan harian dan pengingat ibadah tepat waktu.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF757575),
-              ),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  NotificationService().requestPermissions();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF32D74B),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text(
-                  'Aktifkan Sekarang',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Nanti Saja',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
   }
 
   String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());

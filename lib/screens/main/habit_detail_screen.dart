@@ -6,7 +6,7 @@ import '../../providers/habit_provider.dart';
 import 'create_habit_screen.dart';
 
 /// HABIT DETAIL SCREEN
-/// Halaman detail habit yang menampilkan opsi edit dan hapus
+/// Halaman detail amalan yang menampilkan opsi edit dan hapus
 class HabitDetailScreen extends StatelessWidget {
   final HabitModel habit;
 
@@ -22,16 +22,23 @@ class HabitDetailScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+        toolbarHeight: 90,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-        title: const Text(
-          'Detail Habit',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: Text(
+            'Detail Amalan',
+            style: TextStyle(
+              color: Color(0xFF1A1A1A),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         centerTitle: true,
@@ -54,8 +61,8 @@ class HabitDetailScreen extends StatelessWidget {
                 _buildMenuButton(
                   context: context,
                   icon: Icons.edit_outlined,
-                  label: 'Edit Habit',
-                  subtitle: 'Ubah nama atau frekuensi habit',
+                  label: 'Edit Amalan',
+                  subtitle: 'Ubah nama atau jadwal amalan',
                   onTap: () async {
                     final result = await Navigator.push(
                       context,
@@ -77,8 +84,8 @@ class HabitDetailScreen extends StatelessWidget {
                 _buildMenuButton(
                   context: context,
                   icon: Icons.delete_outline,
-                  label: 'Hapus Habit',
-                  subtitle: 'Hapus habit ini secara permanen',
+                  label: 'Hapus Amalan',
+                  subtitle: 'Hapus amalan ini secara permanen',
                   isDestructive: true,
                   onTap: () => _showDeleteConfirmation(context),
                 ),
@@ -127,7 +134,7 @@ class HabitDetailScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  habit.type == 'harian' ? 'Habit Harian' : 'Habit Mingguan',
+                  habit.type == 'harian' ? 'Amalan Harian' : 'Amalan Mingguan',
                   style: const TextStyle(
                     color: Color(0xFF32D74B),
                     fontSize: 12,
@@ -248,7 +255,7 @@ class HabitDetailScreen extends StatelessWidget {
           const SizedBox(width: 12),
           const Expanded(
             child: Text(
-              'Tips: Kamu bisa mengubah jadwal atau menghapus habit ini kapan saja.',
+              'Tips: Kamu bisa mengubah jadwal atau menghapus amalan ini kapan saja.',
               style: TextStyle(
                   fontSize: 13, color: Color(0xFF32D74B), height: 1.4),
             ),
@@ -263,7 +270,7 @@ class HabitDetailScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Hapus Habit?'),
+        title: const Text('Hapus Amalan?'),
         content: Text('Apakah kamu yakin ingin menghapus "${habit.name}"?'),
         actions: [
           TextButton(
@@ -276,7 +283,7 @@ class HabitDetailScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context, 'delete'); // Signal to HomeScreen
-                  Fluttertoast.showToast(msg: "Habit dihapus");
+                  Fluttertoast.showToast(msg: "Amalan dihapus");
                 }
               } catch (e) {
                 Fluttertoast.showToast(msg: "Gagal menghapus: $e");

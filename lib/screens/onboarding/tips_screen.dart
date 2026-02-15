@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/ramadhan_utils.dart';
 
 class TipsScreen extends StatelessWidget {
   final VoidCallback? onNext;
@@ -18,10 +19,20 @@ class TipsScreen extends StatelessWidget {
     final int displayTarget = targetPages ??
         (ModalRoute.of(context)?.settings.arguments as int? ?? 1);
 
-    // Perhitungan dinamis berdasarkan target
-    final int juzPerDay = displayTarget;
-    final int pagesPerDay = juzPerDay * 20;
-    final int pagesPerPrayer = juzPerDay * 4;
+    final auth = context.watch<AuthProvider>();
+
+    // Perhitungan harian berdasarkan sisa hari ramadhan
+    final double dailyTarget = RamadhanUtils.calculateDailyTarget(
+      totalTargetKhatam: displayTarget,
+      completedJuz: auth.userData?.completedJuz ?? 0.0,
+      startDate: auth.ramadhanStartDate,
+      totalRamadhanDays: auth.totalRamadhanDays,
+    );
+
+    final String juzPerDayStr = RamadhanUtils.formatJuzTarget(dailyTarget);
+    final int pagesPerDay = (dailyTarget * 20).round();
+    final String pagesPerPrayerStr =
+        RamadhanUtils.formatPagePerPrayer(dailyTarget);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -79,7 +90,7 @@ class TipsScreen extends StatelessWidget {
                       color: const Color(0xFFE8F9EC),
                       title: 'Target Harian',
                       description:
-                          'Targetmu adalah membaca $juzPerDay Juz ($pagesPerDay halaman) setiap hari selama bulan Ramadhan.',
+                          'Targetmu adalah membaca $juzPerDayStr ($pagesPerDay halaman) setiap hari selama bulan Ramadhan.',
                     ),
                     const SizedBox(height: 16),
                     _buildTipCard(
@@ -87,7 +98,7 @@ class TipsScreen extends StatelessWidget {
                       color: const Color(0xFFE3F2FD),
                       title: 'Setiap Selesai Shalat',
                       description:
-                          'Cukup baca $pagesPerPrayer halaman setiap selesai shalat fardhu untuk mencicil target harianmu.',
+                          'Cukup baca $pagesPerPrayerStr setiap selesai shalat fardhu untuk mencicil target harianmu.',
                     ),
                     const SizedBox(height: 16),
                     _buildTipCard(
@@ -120,7 +131,16 @@ class TipsScreen extends StatelessWidget {
                       () async {
                         // Simpan target khatam ke database
                         final authProvider = context.read<AuthProvider>();
-                        await authProvider.updateTargetKhatam(displayTarget);
+                        final dailyTargetToLock =
+                            RamadhanUtils.calculateDailyTarget(
+                          totalTargetKhatam: displayTarget,
+                          completedJuz:
+                              authProvider.userData?.completedJuz ?? 0.0,
+                          startDate: authProvider.ramadhanStartDate,
+                          totalRamadhanDays: authProvider.totalRamadhanDays,
+                        );
+                        await authProvider.updateTargetKhatam(
+                            displayTarget, dailyTargetToLock);
 
                         // Pindah ke halaman utama (MainScreen)
                         if (context.mounted) {

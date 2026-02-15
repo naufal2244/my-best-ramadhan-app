@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/habit_provider.dart';
 import '../onboarding/target_setting_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -201,10 +203,20 @@ class ProfileScreen extends StatelessWidget {
 
                   _buildMenuItem(
                     icon: Icons.camera_alt_outlined,
-                    title: 'Follow kami di Instagram',
-                    subtitle: '@naufal_ramadhan',
-                    onTap: () {
-                      // Open Instagram
+                    title: 'Ikuti kami di Instagram',
+                    subtitle: '@mybest.ramadhan',
+                    onTap: () async {
+                      final Uri url = Uri.parse(
+                          'https://www.instagram.com/mybest.ramadhan?igsh=OWt4a2Jsc28yYzVm');
+                      if (!await launchUrl(url,
+                          mode: LaunchMode.externalApplication)) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Tidak dapat membuka Instagram')),
+                          );
+                        }
+                      }
                     },
                   ),
 
@@ -214,8 +226,22 @@ class ProfileScreen extends StatelessWidget {
                     icon: Icons.help_outline,
                     title: 'Bantuan dan Saran',
                     subtitle: 'Hubungi tim kami untuk bantuan',
-                    onTap: () {
-                      // Navigate to help/suggestion
+                    onTap: () async {
+                      final Uri emailLaunchUri = Uri(
+                        scheme: 'mailto',
+                        path: 'mybest.ramadhan@gmail.com',
+                        query:
+                            'subject=Bantuan dan Saran&body=Halo Tim My Best Ramadhan,',
+                      );
+                      if (!await launchUrl(emailLaunchUri)) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content:
+                                    Text('Tidak dapat membuka aplikasi email')),
+                          );
+                        }
+                      }
                     },
                   ),
 
@@ -369,7 +395,12 @@ class ProfileScreen extends StatelessWidget {
               onPressed: () async {
                 Navigator.pop(context);
                 // Perform logout
-                await context.read<AuthProvider>().logout();
+                final authProvider = context.read<AuthProvider>();
+                final habitProvider = context.read<HabitProvider>();
+
+                // Bersihkan data habit dulu agar tidak bocor ke user selanjutnya
+                habitProvider.clearData();
+                await authProvider.logout();
 
                 if (context.mounted) {
                   Navigator.pushNamedAndRemoveUntil(

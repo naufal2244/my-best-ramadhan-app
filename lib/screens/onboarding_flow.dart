@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/notification_service.dart';
+import '../utils/ramadhan_utils.dart';
 import 'main/main_screen.dart'; // Import real MainScreen instead of using placeholder
 
 class OnboardingFlow extends StatefulWidget {
@@ -39,7 +40,14 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
       );
     } else {
       // Save target khatam to database
-      await context.read<AuthProvider>().updateTargetKhatam(_targetPages);
+      final auth = context.read<AuthProvider>();
+      final dailyTarget = RamadhanUtils.calculateDailyTarget(
+        totalTargetKhatam: _targetPages,
+        completedJuz: 0.0,
+        startDate: auth.ramadhanStartDate,
+        totalRamadhanDays: auth.totalRamadhanDays,
+      );
+      await auth.updateTargetKhatam(_targetPages, dailyTarget);
 
       // Navigate to main screen
       if (mounted) {
@@ -215,7 +223,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    '🌙 Ramadhan adalah Momentum',
+                    "🌙 Bulan Al-Qur'an Telah Tiba!",
                     style: TextStyle(
                       fontSize: 16,
                       color: Color(0xFF32D74B),
@@ -225,17 +233,18 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Mari kita manfaatkan bulan penuh berkah ini untuk mendekatkan diri kepada Allah SWT',
+                  "\"Bulan Ramadhan adalah (bulan) yang di dalamnya diturunkan Al-Qur'an...\" (QS. Al-Baqarah: 185)",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[600],
                     height: 1.6,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Insya Allah, aplikasi ini akan membantumu mencapai target ibadah yang lebih baik! ✨',
+                  'Bagaimana jika ini adalah Ramadhan terakhir kita? Apakah kita ingin meninggalkan dunia tanpa memberikan hak Al-Qur\'an di bulan yang penuh berkah ini? Yuk, jadikan Ramadhan ini momentum untuk lebih dekat dengan Al-Qur\'an. Insya Allah, aplikasi ini akan membantumu mencapai target khatam yang lebih baik! ✨',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,
@@ -309,14 +318,21 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
 
   void _updateTarget(int delta) {
     setState(() {
-      _targetPages = (_targetPages + delta).clamp(1, 10);
+      _targetPages = (_targetPages + delta).clamp(1, 999);
       widget.onTargetChanged(_targetPages);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final juzPerDay = _targetPages;
+    final auth = context.watch<AuthProvider>();
+    final dailyTarget = RamadhanUtils.calculateDailyTarget(
+      totalTargetKhatam: _targetPages,
+      completedJuz: 0.0,
+      startDate: auth.ramadhanStartDate,
+      totalRamadhanDays: auth.totalRamadhanDays,
+    );
+    final juzPerDay = RamadhanUtils.formatJuzTarget(dailyTarget);
     final totalJuz = _targetPages * 30;
 
     return Padding(
@@ -400,7 +416,7 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
                     _buildCounterButton(
                       icon: Icons.add,
                       onTap: () => _updateTarget(1),
-                      enabled: _targetPages < 10,
+                      enabled: true,
                     ),
                   ],
                 ),
@@ -445,7 +461,7 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
                       child: _buildStatCard(
                         '📅',
                         'Per Hari',
-                        '$juzPerDay Juz',
+                        juzPerDay,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -464,6 +480,16 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
 
           const SizedBox(height: 24),
 
+          Text(
+            '* Berdasarkan standar Mushaf Utsmani & Kemenag RI\n(15 baris per halaman, total 604 halaman)',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.green[700],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
           Text(
             'Tenang! Kamu bisa ubah target ini kapan saja 😊',
             textAlign: TextAlign.center,
@@ -582,10 +608,20 @@ class _TipsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Perhitungan dinamis berdasarkan target
-    final int juzPerDay = targetPages;
-    final int pagesPerDay = juzPerDay * 20;
-    final int pagesPerPrayer = juzPerDay * 4;
+    final auth = context.watch<AuthProvider>();
+
+    // Perhitungan harian berdasarkan sisa hari ramadhan
+    final double dailyTarget = RamadhanUtils.calculateDailyTarget(
+      totalTargetKhatam: targetPages,
+      completedJuz: 0.0,
+      startDate: auth.ramadhanStartDate,
+      totalRamadhanDays: auth.totalRamadhanDays,
+    );
+
+    final String juzPerDayStr = RamadhanUtils.formatJuzTarget(dailyTarget);
+    final int pagesPerDay = (dailyTarget * 20).round();
+    final String pagesPerPrayerStr =
+        RamadhanUtils.formatPagePerPrayer(dailyTarget);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -626,7 +662,7 @@ class _TipsScreen extends StatelessWidget {
                   color: const Color(0xFFE8F9EC),
                   title: 'Target Harian',
                   description:
-                      'Targetmu adalah membaca $juzPerDay Juz ($pagesPerDay halaman) setiap hari selama bulan Ramadhan.',
+                      'Targetmu adalah membaca $juzPerDayStr ($pagesPerDay halaman) setiap hari selama bulan Ramadhan.',
                 ),
                 const SizedBox(height: 16),
                 _buildTipCard(
@@ -634,7 +670,7 @@ class _TipsScreen extends StatelessWidget {
                   color: const Color(0xFFE3F2FD),
                   title: 'Setiap Selesai Shalat',
                   description:
-                      'Cukup baca $pagesPerPrayer halaman setiap selesai shalat fardhu untuk mencicil target harianmu.',
+                      'Cukup baca $pagesPerPrayerStr setiap selesai shalat fardhu untuk mencicil target harianmu.',
                 ),
                 const SizedBox(height: 16),
                 _buildTipCard(
@@ -650,7 +686,7 @@ class _TipsScreen extends StatelessWidget {
                   color: const Color(0xFFF3E5F5),
                   title: 'Evaluasi Malam',
                   description:
-                      'Gunakan waktu sebelum tidur untuk melengkapi jika ada target halaman yang terlewat.',
+                      'Gunakan waktu sebelum tidur untuk melengkapi jika ada target halaman yang belum tercapai.',
                 ),
               ],
             ),
@@ -878,7 +914,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
 
                       // Main title
                       const Text(
-                        'Yuk, izinkan notifikasi biar dapat renungan harian dari aplikasi!',
+                        'Yuk, Izinkan notifikasi agar kami bisa mengingatkanmu dengan renungan harian yang menginspirasi!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 22,
@@ -920,7 +956,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Notifikasi renungan harian',
+                        '🌟 Teman pengingat setia setiap hari',
                         style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF1A1A1A),

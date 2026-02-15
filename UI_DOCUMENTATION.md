@@ -161,10 +161,56 @@ lib/
 - Button Register
 - Link ke Login
 
-### **Forgot Password Screen** ⏳
-- Input Email
-- Button Send Reset Link
-- Link ke Login
+### **Forgot Password Screen** ✅
+**File:** `lib/screens/auth/forgot_password_screen.dart`
+
+**Design Flow:**
+```
+┌─────────────────────┐     ┌─────────────────────┐
+│  FORGOT PASSWORD    │ ──▶ │   SUCCESS SCREEN    │
+│                     │     │                     │
+│  [← Back]           │     │  [✓ Icon Success]   │
+│                     │     │                     │
+│  Lupa Kata Sandi    │     │  Cek Email Anda!    │
+│                     │     │                     │
+│  Silahkan masukkan  │     │  Kami telah kirim   │
+│  email Anda untuk   │     │  link reset ke:     │
+│  menerima link...   │     │  user@email.com     │
+│                     │     │                     │
+│  Email Anda         │     │  [ℹ Info Card]      │
+│  ┌───────────────┐  │     │  Link kadaluarsa    │
+│  │ 📧 Email      │  │     │  dalam 1 jam        │
+│  └───────────────┘  │     │                     │
+│                     │     │  ┌───────────────┐  │
+│  ┌───────────────┐  │     │  │ Kembali Login │  │
+│  │ Kirim Link    │  │     │  └───────────────┘  │
+│  │    Reset      │  │     │                     │
+│  └───────────────┘  │     │  Tidak terima?      │
+│                     │     │  [Kirim Ulang]      │
+│  [← Kembali Login]  │     └─────────────────────┘
+└─────────────────────┘
+```
+
+**Fitur:**
+- ✅ Input Email dengan validasi
+- ✅ Integrasi Firebase Auth `sendPasswordResetEmail()`
+- ✅ Success screen dengan info email terkirim
+- ✅ Loading state saat kirim email
+- ✅ Error handling dengan toast
+- ✅ Link kembali ke login
+- ✅ Button kirim ulang email
+- ✅ Info card: link kadaluarsa 1 jam
+
+**Komponen:**
+1. **ForgotPasswordScreen** - Form input email
+2. **ForgotPasswordSuccessScreen** - Konfirmasi email terkirim
+
+**Backend:**
+- Firebase Auth: `FirebaseAuth.instance.sendPasswordResetEmail()`
+- Gratis di Spark Plan ✅
+- Email otomatis dari Firebase
+- Link reset valid 1 jam
+
 
 ### **Home Screen** ⏳
 - Welcome card

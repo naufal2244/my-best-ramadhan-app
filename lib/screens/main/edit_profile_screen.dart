@@ -64,16 +64,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+        toolbarHeight: 90, // Meningkatkan tinggi agar tidak mepet
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-        title: const Text(
-          'Edit Profil',
-          style: TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 16),
+          child: Text(
+            'Edit Profil',
+            style: TextStyle(
+              color: Color(0xFF1A1A1A),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         centerTitle: true,

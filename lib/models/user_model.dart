@@ -6,6 +6,9 @@ class UserModel {
   final int targetKhatam;
   final DateTime? createdAt;
   final bool hasSeenTutorial;
+  final bool hasSeenInitialTutorial;
+  final double completedJuz;
+  final double dailyJuzTarget; // Target juz harian yang dikunci
 
   UserModel({
     required this.uid,
@@ -15,6 +18,9 @@ class UserModel {
     this.targetKhatam = 1,
     this.createdAt,
     this.hasSeenTutorial = false,
+    this.hasSeenInitialTutorial = false,
+    this.completedJuz = 0.0,
+    this.dailyJuzTarget = 1.0,
   });
 
   /// Konversi dari Map (Firestore) ke Object UserModel
@@ -29,6 +35,11 @@ class UserModel {
           ? (map['createdAt'] as dynamic).toDate()
           : null,
       hasSeenTutorial: map['hasSeenTutorial'] ?? false,
+      hasSeenInitialTutorial: map['hasSeenInitialTutorial'] ?? false,
+      completedJuz: (map['completedJuz'] ?? 0.0).toDouble(),
+      dailyJuzTarget: (map['dailyJuzTarget'] ??
+              (map['targetKhatam'] != null ? map['targetKhatam'] * 1.0 : 1.0))
+          .toDouble(),
     );
   }
 
@@ -42,6 +53,9 @@ class UserModel {
       'targetKhatam': targetKhatam,
       'createdAt': createdAt,
       'hasSeenTutorial': hasSeenTutorial,
+      'hasSeenInitialTutorial': hasSeenInitialTutorial,
+      'completedJuz': completedJuz,
+      'dailyJuzTarget': dailyJuzTarget,
     };
   }
 
@@ -51,6 +65,9 @@ class UserModel {
     String? photoUrl,
     int? targetKhatam,
     bool? hasSeenTutorial,
+    bool? hasSeenInitialTutorial,
+    double? completedJuz,
+    double? dailyJuzTarget,
   }) {
     return UserModel(
       uid: uid,
@@ -60,6 +77,10 @@ class UserModel {
       targetKhatam: targetKhatam ?? this.targetKhatam,
       createdAt: createdAt,
       hasSeenTutorial: hasSeenTutorial ?? this.hasSeenTutorial,
+      hasSeenInitialTutorial:
+          hasSeenInitialTutorial ?? this.hasSeenInitialTutorial,
+      completedJuz: completedJuz ?? this.completedJuz,
+      dailyJuzTarget: dailyJuzTarget ?? this.dailyJuzTarget,
     );
   }
 }

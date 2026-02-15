@@ -28,10 +28,35 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   String _randomPlaceholder = 'Misal: Tilawah 5 Halaman';
   final List<String> _placeholderExamples = [
     'Misal: Tilawah 5 Halaman',
-    'Misal: Shalat Duha 4 Rakaat',
-    'Misal: Sedekah Subuh',
-    'Misal: Baca 1 Hadits',
+    'Misal: Tilawah 1 Juz',
     'Misal: Hafalan 1 Ayat',
+    'Misal: Tadarus Setelah Subuh',
+    'Misal: Muraja\'ah Hafalan',
+    
+    // SHALAT SUNNAH (Prioritas #2)
+    'Misal: Shalat Duha 4 Rakaat',
+    'Misal: Shalat Tahajud',
+    'Misal: Shalat Witir',
+    'Misal: Rawatib 12 Rakaat',
+    
+    // DZIKIR & DOA (Prioritas #3)
+    'Misal: Dzikir Pagi & Petang',
+    'Misal: Istighfar 100x',
+    'Misal: Shalawat 100x',
+    'Misal: Wirid Setelah Shalat',
+    
+    // SEDEKAH & BERBAGI (Prioritas #4)
+    'Misal: Sedekah Harian',
+    'Misal: Infaq Setiap Hari',
+    'Misal: Bagi Takjil',
+    
+    // ILMU & PENGEMBANGAN DIRI (Prioritas #5)
+    'Misal: Baca 1 Hadits',
+    'Misal: Kajian Ramadhan',
+    'Misal: Baca Tafsir 1 Ayat',
+    
+    // KESEHATAN (Opsional, yang relevan)
+    'Misal: Jaga Sahur Tepat Waktu',
     'Misal: Olahraga Ringan',
   ];
 
@@ -94,7 +119,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             type: _selectedType,
             targetPerWeek: _selectedType == 'mingguan' ? _targetPerWeek : null,
           );
-          Fluttertoast.showToast(msg: "Habit berhasil dibuat!");
+          Fluttertoast.showToast(msg: "Amalan berhasil dibuat!");
         }
 
         if (mounted) {
@@ -120,16 +145,23 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Color(0xFF1A1A1A)),
-          onPressed: () => Navigator.pop(context),
+        toolbarHeight: 90,
+        leading: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: IconButton(
+            icon: const Icon(Icons.close, color: Color(0xFF1A1A1A)),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-        title: Text(
-          widget.habit != null ? 'Edit Habit' : 'Buat Habit Baru',
-          style: const TextStyle(
-            color: Color(0xFF1A1A1A),
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+        title: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Text(
+            widget.habit != null ? 'Edit Amalan' : 'Tambah Amalan Baru',
+            style: const TextStyle(
+              color: Color(0xFF1A1A1A),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         centerTitle: true,
@@ -148,14 +180,14 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                 const SizedBox(height: 32),
 
                 // Nama Habit Input
-                _buildSectionLabel('Nama Habit'),
+                _buildSectionLabel('Nama Amalan'),
                 const SizedBox(height: 12),
                 _buildNameField(),
 
                 const SizedBox(height: 32),
 
                 // Tipe Habit Selector
-                _buildSectionLabel('Tipe Habit'),
+                _buildSectionLabel('Tipe Amalan'),
                 const SizedBox(height: 12),
                 _buildTypeSelector(),
 
@@ -216,7 +248,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Mulai Kebiasaan Baik',
+                  'Mulai Kebiasaan Baik di Ramadhan',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -225,7 +257,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Set target kecil agar konsisten beribadah setiap hari.',
+                  'Tetapkan target kecil agar konsisten beribadah setiap hari.',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -454,7 +486,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
         child: _isLoading
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text(
-                'Simpan Habit',
+                'Simpan',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
       ),

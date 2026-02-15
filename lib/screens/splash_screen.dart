@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 12),
               const Text(
-                'Ramadhan Terbaik Dimulai Dari Sini',
+                'Mari jadikan Ramadhan Tahun ini berbeda',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,
@@ -150,10 +150,14 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ],
       ),
-      child: const Icon(
-        Icons.menu_book_rounded,
-        size: 70,
-        color: Color(0xFF32D74B),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Image.asset(
+            'assets/images/app_logo_inverted.png',
+            fit: BoxFit.contain,
+          ),
+        ),
       ),
     );
   }

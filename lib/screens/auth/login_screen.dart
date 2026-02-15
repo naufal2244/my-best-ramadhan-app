@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/notification_service.dart';
 import '../onboarding_flow.dart';
+import 'forgot_password_screen.dart';
 
 /// HALAMAN LOGIN
 /// Ini adalah halaman pertama yang akan muncul setelah splash screen
@@ -165,14 +166,6 @@ class _LoginScreenState extends State<LoginScreen> {
       height: 120,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF32D74B), // primary_green
-            Color(0xFF63E677), // light_green
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF32D74B).withOpacity(0.3),
@@ -181,10 +174,11 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ],
       ),
-      child: const Icon(
-        Icons.menu_book_rounded, // Icon Quran/Buku
-        size: 60,
-        color: Colors.white,
+      child: ClipOval(
+        child: Image.asset(
+          'assets/images/app_logo_inner_light.png',
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }
@@ -459,8 +453,13 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         TextButton(
           onPressed: () {
-            // TODO: Navigate ke halaman forgot password
-            print('Navigate to Forgot Password');
+            // Navigate ke halaman forgot password
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ForgotPasswordScreen(),
+              ),
+            );
           },
           style: TextButton.styleFrom(
             padding: EdgeInsets.zero,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../widgets/habit_tutorial_overlay.dart';
+import '../../utils/ramadhan_utils.dart';
 import 'package:provider/provider.dart';
 import '../../providers/habit_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -8,7 +9,6 @@ import 'package:intl/intl.dart';
 import '../../models/habit_model.dart';
 import 'create_habit_screen.dart';
 import 'habit_detail_screen.dart';
-import '../../services/notification_service.dart';
 import '../../providers/notification_provider.dart';
 import '../../models/quote_model.dart';
 import 'dart:math' as math;
@@ -22,11 +22,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _selectedTab = 'Harian';
-  final List<String> _tabs = ['Harian', 'Mingguan', 'Keseluruhan'];
+  final List<String> _tabs = ['Harian', 'Mingguan', 'Bulanan'];
 
   // Unified Habit List
   bool _showCompleted = false;
   bool _showTutorial = false;
+  bool _initialTutorialTriggered =
+      false; // Guard flag to prevent double trigger
   final dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
 
   @override
@@ -35,17 +37,19 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       if (authProvider.userData != null) {
-        context
-            .read<HabitProvider>()
-            .fetchHabits(authProvider.userData!.targetKhatam);
-
-        // FETCH QUOTES FOR HOME SCREEN
-        final notifProvider = context.read<NotificationProvider>();
-        if (notifProvider.quotes.isEmpty) {
-          notifProvider.fetchAndScheduleNotifications();
-        }
+        _fetchInitialData(authProvider);
       }
     });
+  }
+
+  void _fetchInitialData(AuthProvider auth) {
+    context.read<HabitProvider>().fetchHabits(auth);
+
+    // FETCH QUOTES FOR HOME SCREEN
+    final notifProvider = context.read<NotificationProvider>();
+    if (notifProvider.quotes.isEmpty) {
+      notifProvider.fetchAndScheduleNotifications();
+    }
   }
 
   String get _todayKey => DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -67,7 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Refresh data
       final auth = context.read<AuthProvider>();
       if (auth.userData != null) {
-        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+        context.read<HabitProvider>().fetchHabits(auth);
 
         // Show tutorial only if the user hasn't seen it yet
         if (!auth.userData!.hasSeenTutorial) {
@@ -79,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         } else {
           // Only show SnackBar if tutorial is NOT shown
           if (mounted) {
-            _showSuccessSnackBar('Habit baru berhasil dibuat! 🎉');
+            _showSuccessSnackBar('Amalan baru berhasil dibuat! 🎉');
           }
         }
       }
@@ -90,6 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _showTutorial = false;
     });
+    // Mark only the initial entrance tutorial as seen
+    context.read<AuthProvider>().setHasSeenInitialTutorial(true);
   }
 
   Future<void> _navToDetail(HabitModel habit) async {
@@ -104,19 +110,19 @@ class _HomeScreenState extends State<HomeScreen> {
       // Refresh data
       final auth = context.read<AuthProvider>();
       if (auth.userData != null) {
-        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+        context.read<HabitProvider>().fetchHabits(auth);
       }
       if (mounted) {
-        _showSuccessSnackBar('Habit berhasil dihapus.');
+        _showSuccessSnackBar('Amalan berhasil dihapus.');
       }
     } else if (result == 'edit') {
       // Refresh data
       final auth = context.read<AuthProvider>();
       if (auth.userData != null) {
-        context.read<HabitProvider>().fetchHabits(auth.userData!.targetKhatam);
+        context.read<HabitProvider>().fetchHabits(auth);
       }
       if (mounted) {
-        _showSuccessSnackBar('Habit berhasil diperbarui! ✨');
+        _showSuccessSnackBar('Amalan berhasil diperbarui! ✨');
       }
     }
   }
@@ -166,12 +172,30 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          // Trigger fetch habits jika user data sudah ada tapi habit masih kosong
+          // Trigger fetch habits otomatis jika data user baru saja tersedia
+          // atau jika list habit masih kosong (misal setelah logout/login)
           final habitProvider = context.read<HabitProvider>();
-          if (habitProvider.habits.isEmpty && !habitProvider.isLoading) {
+          if (habitProvider.habits.isEmpty &&
+              !habitProvider.isLoading &&
+              !auth.isLoading) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                habitProvider.fetchHabits(auth.userData!.targetKhatam);
+                _fetchInitialData(auth);
+              }
+            });
+          }
+
+          // TUTORIAL CONDITION 1: Muncul saat pertama kali masuk Home (Akun Baru)
+          // Fokus hanya pada flag database agar tidak terpengaruh loading habit
+          if (!auth.userData!.hasSeenInitialTutorial &&
+              !_initialTutorialTriggered) {
+            _initialTutorialTriggered =
+                true; // Langsung tandai agar tidak berkali-kali
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && !_showTutorial) {
+                setState(() {
+                  _showTutorial = true;
+                });
               }
             });
           }
@@ -188,27 +212,32 @@ class _HomeScreenState extends State<HomeScreen> {
                       elevation: 0,
                       automaticallyImplyLeading: false,
                       centerTitle: false,
-                      title: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Assalamualaikum,',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.normal,
-                              color: Color(0xFF757575), // Colors.grey[600]
+                      toolbarHeight: 110, // Ditingkatkan agar tidak mepet
+                      title: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 20), // Padding tambahan ke bawah kamera
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Assalamualaikum,',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.normal,
+                                color: Color(0xFF757575),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${auth.userData?.displayName ?? "User"}! 👋',
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${auth.userData?.displayName ?? "User"}! 👋',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1A1A1A),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
 
@@ -245,7 +274,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               if (_selectedTab == 'Mingguan')
                                 return Column(
                                     children: _buildWeeklyView(habits));
-                              if (_selectedTab == 'Keseluruhan')
+                              if (_selectedTab == 'Bulanan')
                                 return Column(
                                     children: _buildMonthlyView(habits));
 
@@ -253,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             },
                           ),
 
-                          const SizedBox(height: 80),
+                          const SizedBox(height: 100), // Spacing for FAB
                         ]),
                       ),
                     ),
@@ -261,7 +290,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // Tutorial Overlay
+              // UI Button Plus (FAB) - Put inside Stack but AFTER SafeArea
+              // This is behind the tutorial overlay
+              Positioned(
+                bottom: 24,
+                right: 24,
+                child: SizedBox(
+                  width: 68,
+                  height: 68,
+                  child: FloatingActionButton(
+                    onPressed: _navToCreate,
+                    backgroundColor: const Color(0xFF32D74B),
+                    elevation: 6,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.add, color: Colors.white, size: 36),
+                  ),
+                ),
+              ),
+
+              // Tutorial Overlay - Highest layer in Stack
               if (_showTutorial)
                 HabitTutorialOverlay(
                   onDismiss: _dismissTutorial,
@@ -284,76 +331,85 @@ class _HomeScreenState extends State<HomeScreen> {
           randomQuote = quotes[math.Random().nextInt(quotes.length)];
         }
 
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF32D74B), Color(0xFF63E677)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF32D74B).withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      randomQuote?.type == 'hadith' ? '🌙' : '📖',
-                      style: const TextStyle(fontSize: 20),
-                    ),
+        final String quoteText = randomQuote != null
+            ? '\"${randomQuote.content}\"'
+            : '\"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Qur\'an\"';
+
+        // Quote Section
+        return Consumer<AuthProvider>(
+          builder: (context, auth, _) {
+            final currentDay = RamadhanUtils.getCurrentRamadhanDay(
+              auth.ramadhanStartDate,
+            );
+            final isAfterRamadhan = currentDay > auth.totalRamadhanDays;
+
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF32D74B), Color(0xFF63E677)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF32D74B).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text(
-                      'Ramadhan Hari ke-12',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          '🌙',
+                          style: TextStyle(fontSize: 20),
+                        ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          isAfterRamadhan
+                              ? 'Selamat Idul Fitri 1447 H'
+                              : (currentDay > 0
+                                  ? 'Ramadhan Hari ke-$currentDay'
+                                  : 'Menuju Ramadhan'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    isAfterRamadhan
+                        ? 'Yuk rayakan hari kemenangan ini dengan penuh kegembiraan! Saatnya berbagi kebahagiaan dan mempererat tali persaudaraan.'
+                        : quoteText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                      height: 1.5,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                randomQuote != null
-                    ? '"${randomQuote.content}"'
-                    : '"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Qur\'an"',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.95),
-                  fontSize: 14,
-                  height: 1.5,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                randomQuote != null
-                    ? '— ${randomQuote.source}'
-                    : '— QS. Al-Baqarah: 185',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.8),
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -395,35 +451,26 @@ class _HomeScreenState extends State<HomeScreen> {
     final dailyCompleted = _getDailyCompletedCount(habits);
 
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 180,
+      Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          height: 8,
+          width: 180,
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F0F0),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: totalDaily == 0 ? 0 : dailyCompleted / totalDaily,
             child: Container(
-              height: 8,
               decoration: BoxDecoration(
-                color: const Color(0xFFF0F0F0),
+                color: const Color(0xFF32D74B),
                 borderRadius: BorderRadius.circular(4),
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: totalDaily == 0 ? 0 : dailyCompleted / totalDaily,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF32D74B),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
               ),
             ),
           ),
-          const Spacer(),
-          GestureDetector(
-            onTap: _navToCreate,
-            child: const Icon(Icons.add, color: Color(0xFF1A1A1A), size: 28),
-          ),
-        ],
+        ),
       ),
       const SizedBox(height: 8),
       Align(
@@ -500,21 +547,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   extentRatio: 0.3,
                   dismissible: DismissiblePane(
                     onDismissed: () {
+                      final auth = context.read<AuthProvider>();
                       context
                           .read<HabitProvider>()
-                          .toggleHabit(habit.id, DateTime.now());
+                          .toggleHabit(habit.id, DateTime.now(), auth);
                       _showSuccessSnackBar(
-                          'Alhamdulillah, habit diselesaikan! 🌟');
+                          'Alhamdulillah, amalan diselesaikan! 🌟');
                     },
                   ),
                   children: [
                     SlidableAction(
                       onPressed: (context) {
+                        final auth = context.read<AuthProvider>();
                         context
                             .read<HabitProvider>()
-                            .toggleHabit(habit.id, DateTime.now());
+                            .toggleHabit(habit.id, DateTime.now(), auth);
                         _showSuccessSnackBar(
-                            'Alhamdulillah, habit diselesaikan! 🌟');
+                            'Alhamdulillah, amalan diselesaikan! 🌟');
                       },
                       backgroundColor: const Color(0xFF32D74B),
                       foregroundColor: Colors.white,
@@ -532,19 +581,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   extentRatio: 0.3,
                   dismissible: DismissiblePane(
                     onDismissed: () {
+                      final auth = context.read<AuthProvider>();
                       context
                           .read<HabitProvider>()
-                          .toggleHabit(habit.id, DateTime.now());
-                      _showUndoSnackBar('Habit dibatalkan. Semangat ya! 💪');
+                          .toggleHabit(habit.id, DateTime.now(), auth);
+                      _showUndoSnackBar('Amalan dibatalkan. Semangat ya! 💪');
                     },
                   ),
                   children: [
                     SlidableAction(
                       onPressed: (context) {
+                        final auth = context.read<AuthProvider>();
                         context
                             .read<HabitProvider>()
-                            .toggleHabit(habit.id, DateTime.now());
-                        _showUndoSnackBar('Habit dibatalkan. Semangat ya! 💪');
+                            .toggleHabit(habit.id, DateTime.now(), auth);
+                        _showUndoSnackBar('Amalan dibatalkan. Semangat ya! 💪');
                       },
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
@@ -558,7 +609,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(16),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: isDone ? const Color(0xFFE8F9EC) : const Color(0xFFF5F5F5),
+              color: habit.isAutoGenerated
+                  ? (isDone
+                      ? const Color(0xFFD4F4DD)
+                      : const Color(0xFFE8F9EC))
+                  : (isDone
+                      ? const Color(0xFFE8F9EC)
+                      : const Color(0xFFF5F5F5)),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDone
@@ -596,15 +653,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============ MINGGUAN VIEW ============
   List<Widget> _buildWeeklyView(List<HabitModel> habits) {
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: _navToCreate,
-            child: const Icon(Icons.add, color: Color(0xFF1A1A1A), size: 28),
-          ),
-        ],
-      ),
       const SizedBox(height: 16),
       ...habits.map((habit) {
         // Logic untuk menentukan tanggal-tanggal di minggu ini
@@ -679,37 +727,30 @@ class _HomeScreenState extends State<HomeScreen> {
       int index, bool isDone, bool isScheduled, HabitModel h) {
     return Column(
       children: [
-        GestureDetector(
-          onTap: () {
-            final now = DateTime.now();
-            final date = now.subtract(Duration(days: now.weekday - 1 - index));
-            context.read<HabitProvider>().toggleHabit(h.id, date);
-          },
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: isDone
-                  ? const Color(0xFF32D74B)
-                  : (isScheduled ? const Color(0xFFE0E0E0) : Colors.white),
-              shape: BoxShape.circle,
-              border: Border.all(
-                  color: isDone
-                      ? const Color(0xFF32D74B)
-                      : (isScheduled
-                          ? const Color(0xFFCCCCCC)
-                          : Colors.grey[300]!),
-                  width: 2),
-            ),
-            child: Center(
-              child: Icon(Icons.check,
-                  color: isDone
-                      ? Colors.white
-                      : (isScheduled
-                          ? Colors.white.withOpacity(0.5)
-                          : Colors.transparent),
-                  size: 18),
-            ),
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isDone
+                ? const Color(0xFF32D74B)
+                : (isScheduled ? const Color(0xFFE0E0E0) : Colors.white),
+            shape: BoxShape.circle,
+            border: Border.all(
+                color: isDone
+                    ? const Color(0xFF32D74B)
+                    : (isScheduled
+                        ? const Color(0xFFCCCCCC)
+                        : Colors.grey[300]!),
+                width: 2),
+          ),
+          child: Center(
+            child: Icon(Icons.check,
+                color: isDone
+                    ? Colors.white
+                    : (isScheduled
+                        ? Colors.white.withValues(alpha: 0.5)
+                        : Colors.transparent),
+                size: 18),
           ),
         ),
         const SizedBox(height: 6),
@@ -725,15 +766,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // ============ KESELURUHAN VIEW ============
   List<Widget> _buildMonthlyView(List<HabitModel> habits) {
     return [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          GestureDetector(
-            onTap: _navToCreate,
-            child: const Icon(Icons.add, color: Color(0xFF1A1A1A), size: 28),
-          ),
-        ],
-      ),
       const SizedBox(height: 16),
       ...habits.map((habit) {
         String subtitle = habit.type == 'harian'
@@ -793,38 +825,35 @@ class _HomeScreenState extends State<HomeScreen> {
                               ? 7
                               : (index + 1) % 7); // Simplified logic
 
-                      return GestureDetector(
-                        onTap: () {
-                          context
-                              .read<HabitProvider>()
-                              .toggleHabit(habit.id, date);
-                        },
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
+                      return Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: isDone
+                              ? const Color(0xFF32D74B)
+                              : (isSched
+                                  ? const Color(0xFFE0E0E0)
+                                  : Colors.white),
+                          shape: BoxShape.circle,
+                          border: Border.all(
                             color: isDone
                                 ? const Color(0xFF32D74B)
                                 : (isSched
-                                    ? const Color(0xFFE0E0E0)
-                                    : Colors.white),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: isDone
-                                    ? const Color(0xFF32D74B)
-                                    : (isSched
-                                        ? const Color(0xFFCCCCCC)
-                                        : Colors.grey[300]!),
-                                width: 1.5),
+                                    ? const Color(0xFFCCCCCC)
+                                    : Colors.grey[300]!),
+                            width: 1.5,
                           ),
-                          child: Center(
-                              child: Icon(Icons.check,
-                                  color: isDone
-                                      ? Colors.white
-                                      : (isSched
-                                          ? Colors.white.withOpacity(0.5)
-                                          : Colors.transparent),
-                                  size: 14)),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.check,
+                            color: isDone
+                                ? Colors.white
+                                : (isSched
+                                    ? Colors.white.withOpacity(0.5)
+                                    : Colors.transparent),
+                            size: 14,
+                          ),
                         ),
                       );
                     }),

@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         // Nama aplikasi
-        title: 'My Best Ramadhan',
+        title: 'MyBest Ramadhan',
 
         // Hilangkan banner "DEBUG" di pojok kanan atas
         debugShowCheckedModeBanner: false,

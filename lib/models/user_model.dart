@@ -9,18 +9,20 @@ class UserModel {
   final bool hasSeenInitialTutorial;
   final double completedJuz;
   final double dailyJuzTarget; // Target juz harian yang dikunci
+  final bool hasSetupDefaultHabits;
 
   UserModel({
     required this.uid,
     required this.email,
     this.displayName,
     this.photoUrl,
-    this.targetKhatam = 1,
+    this.targetKhatam = 0,
     this.createdAt,
     this.hasSeenTutorial = false,
     this.hasSeenInitialTutorial = false,
     this.completedJuz = 0.0,
     this.dailyJuzTarget = 1.0,
+    this.hasSetupDefaultHabits = false,
   });
 
   /// Konversi dari Map (Firestore) ke Object UserModel
@@ -30,7 +32,7 @@ class UserModel {
       email: map['email'] ?? '',
       displayName: map['displayName'],
       photoUrl: map['photoUrl'],
-      targetKhatam: map['targetKhatam'] ?? 1,
+      targetKhatam: map['targetKhatam'] ?? 0,
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as dynamic).toDate()
           : null,
@@ -40,6 +42,7 @@ class UserModel {
       dailyJuzTarget: (map['dailyJuzTarget'] ??
               (map['targetKhatam'] != null ? map['targetKhatam'] * 1.0 : 1.0))
           .toDouble(),
+      hasSetupDefaultHabits: map['hasSetupDefaultHabits'] ?? false,
     );
   }
 
@@ -56,6 +59,7 @@ class UserModel {
       'hasSeenInitialTutorial': hasSeenInitialTutorial,
       'completedJuz': completedJuz,
       'dailyJuzTarget': dailyJuzTarget,
+      'hasSetupDefaultHabits': hasSetupDefaultHabits,
     };
   }
 
@@ -68,6 +72,7 @@ class UserModel {
     bool? hasSeenInitialTutorial,
     double? completedJuz,
     double? dailyJuzTarget,
+    bool? hasSetupDefaultHabits,
   }) {
     return UserModel(
       uid: uid,
@@ -81,6 +86,8 @@ class UserModel {
           hasSeenInitialTutorial ?? this.hasSeenInitialTutorial,
       completedJuz: completedJuz ?? this.completedJuz,
       dailyJuzTarget: dailyJuzTarget ?? this.dailyJuzTarget,
+      hasSetupDefaultHabits:
+          hasSetupDefaultHabits ?? this.hasSetupDefaultHabits,
     );
   }
 }

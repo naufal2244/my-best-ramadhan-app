@@ -244,7 +244,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Bagaimana jika ini adalah Ramadhan terakhir kita? Apakah kita ingin meninggalkan dunia tanpa memberikan hak Al-Qur\'an di bulan yang penuh berkah ini? Yuk, jadikan Ramadhan ini momentum untuk lebih dekat dengan Al-Qur\'an. Insya Allah, aplikasi ini akan membantumu mencapai target khatam yang lebih baik! ✨',
+                  'Ramadhan adalah momentum terbaik untuk lebih dekat dengan Al-Qur\'an.\n\nAplikasi ini akan membantumu mencapai target khatam yang lebih baik! ✨',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,

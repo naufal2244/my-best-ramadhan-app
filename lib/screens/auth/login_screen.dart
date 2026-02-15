@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../providers/auth_provider.dart';
 import '../../services/notification_service.dart';
 import '../onboarding_flow.dart';
@@ -50,22 +51,40 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordController.text.trim(),
         );
 
-        // Syunkronkan dengan logika Splash: Cek Izin Notifikasi setelah login
-        if (mounted) {
-          final bool isEnabled =
-              await NotificationService().areNotificationsEnabled();
+        // TUNGGU userData ter-populate dari Firestore
+        final currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser != null) {
+          await authProvider.fetchUserData(currentUser.uid);
+        }
 
-          if (isEnabled) {
-            Navigator.pushReplacementNamed(context, '/main');
-          } else {
-            // Belum aktif -> Lempar ke halaman "Yuk Izinkan"
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const OnboardingFlow(initialPage: 3),
-              ),
-            );
-          }
+        if (!mounted) return;
+
+        // CEK: Apakah user baru atau sudah pernah onboarding?
+        if (!authProvider.hasCompletedOnboarding) {
+          // User baru → Ke onboarding dari awal
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OnboardingFlow(),
+            ),
+          );
+          return;
+        }
+
+        // User lama → Cek notifikasi seperti biasa
+        final bool isEnabled =
+            await NotificationService().areNotificationsEnabled();
+
+        if (isEnabled) {
+          Navigator.pushReplacementNamed(context, '/main');
+        } else {
+          // Belum aktif -> Lempar ke halaman "Yuk Izinkan"
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OnboardingFlow(initialPage: 3),
+            ),
+          );
         }
       } catch (e) {
         Fluttertoast.showToast(
@@ -79,15 +98,57 @@ class _LoginScreenState extends State<LoginScreen> {
 
   /// Fungsi untuk handle login dengan Google
   Future<void> _handleGoogleLogin() async {
-    setState(() => _isLoading = true);
+    final authProvider = context.read<AuthProvider>();
 
-    // Simulasi delay
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final success = await authProvider.signInWithGoogle();
 
-    setState(() => _isLoading = false);
+      if (!success) {
+        // User canceled the sign-in
+        return;
+      }
 
-    if (mounted) {
-      Navigator.pushReplacementNamed(context, '/main');
+      // TUNGGU userData ter-populate dari Firestore
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        await authProvider.fetchUserData(currentUser.uid);
+      }
+
+      if (!mounted) return;
+
+      // CEK: Apakah user baru atau sudah pernah onboarding?
+      if (!authProvider.hasCompletedOnboarding) {
+        // User baru → Ke onboarding dari awal
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const OnboardingFlow(),
+          ),
+        );
+        return;
+      }
+
+      // User lama → Cek notifikasi seperti biasa
+      final bool isEnabled =
+          await NotificationService().areNotificationsEnabled();
+
+      if (isEnabled) {
+        Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        // Belum aktif -> Lempar ke halaman "Yuk Izinkan"
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const OnboardingFlow(initialPage: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      Fluttertoast.showToast(
+        msg: "Login dengan Google Gagal: ${e.toString()}",
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
     }
   }
 

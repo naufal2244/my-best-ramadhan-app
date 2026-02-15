@@ -202,6 +202,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     onPressed: () => setState(
                         () => _obscureOldPassword = !_obscureOldPassword),
                   ),
+                  validator: (value) {
+                    if (_newPasswordController.text.isNotEmpty) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kata sandi lama wajib diisi untuk mengubah sandi';
+                      }
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 16),
@@ -397,17 +405,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         if (mounted) {
           _showSnackBar('Profil berhasil diperbarui! ✨');
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       } catch (e) {
         debugPrint('Error saving profile: $e');
         String errorMessage = 'Gagal memperbarui profil.';
 
         if (e is FirebaseAuthException) {
-          if (e.code == 'wrong-password') {
+          debugPrint('Auth Error Code: ${e.code}');
+          if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
             errorMessage = 'Kata sandi lama salah.';
           } else if (e.code == 'requires-recent-login') {
             errorMessage = 'Sesi telah berakhir. Silakan login kembali.';
+          } else if (e.code == 'too-many-requests') {
+            errorMessage = 'Terlalu banyak percobaan. Coba lagi nanti.';
+          } else {
+            errorMessage = 'Error: ${e.message}';
           }
         }
 

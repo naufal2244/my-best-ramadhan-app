@@ -335,6 +335,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ? '\"${randomQuote.content}\"'
             : '\"Bulan Ramadhan adalah bulan yang di dalamnya diturunkan Al-Qur\'an\"';
 
+        final String quoteSource = randomQuote != null
+            ? randomQuote.source
+            : 'QS. Al-Baqarah: 185';
+
         // Quote Section
         return Consumer<AuthProvider>(
           builder: (context, auth, _) {
@@ -406,6 +410,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 1.5,
                     ),
                   ),
+                  if (!isAfterRamadhan && quoteSource.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      '— $quoteSource',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );

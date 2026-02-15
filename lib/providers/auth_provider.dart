@@ -73,6 +73,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Cek apakah user sudah setup target khatam (sudah onboarding)
+  bool get hasCompletedOnboarding {
+    return _userData != null && _userData!.targetKhatam > 0;
+  }
+
   /// Login
   Future<void> login(String email, String password) async {
     _isLoading = true;
@@ -95,6 +100,22 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await _authService.registerWithEmail(email, password, name);
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Login dengan Google
+  Future<bool> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await _authService.signInWithGoogle();
+      return result != null;
     } catch (e) {
       rethrow;
     } finally {
@@ -186,6 +207,21 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint("Error updating initial tutorial status: $e");
+    }
+  }
+
+  /// Update Status Setup Habit Default
+  Future<void> setHasSetupDefaultHabits(bool setup) async {
+    if (_userData == null) return;
+
+    try {
+      await _firestore.collection('users').doc(_userData!.uid).update({
+        'hasSetupDefaultHabits': setup,
+      });
+      _userData = _userData!.copyWith(hasSetupDefaultHabits: setup);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error updating habit setup status: $e");
     }
   }
 

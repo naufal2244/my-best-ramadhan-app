@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/habit_provider.dart';
 import '../onboarding/target_setting_screen.dart';
@@ -202,7 +203,8 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   _buildMenuItem(
-                    icon: Icons.camera_alt_outlined,
+                    svgAsset:
+                        'assets/images/instagram-logo-facebook-2-svgrepo-com.svg',
                     title: 'Ikuti kami di Instagram',
                     subtitle: '@mybest.ramadhan',
                     onTap: () async {
@@ -301,7 +303,8 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildMenuItem({
-    required IconData icon,
+    IconData? icon,
+    String? svgAsset,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
@@ -323,7 +326,17 @@ class ProfileScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: const Color(0xFF32D74B), size: 24),
+              child: svgAsset != null
+                  ? SvgPicture.asset(
+                      svgAsset,
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF32D74B),
+                        BlendMode.srcIn,
+                      ),
+                      width: 24,
+                      height: 24,
+                    )
+                  : Icon(icon, color: const Color(0xFF32D74B), size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(

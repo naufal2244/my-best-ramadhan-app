@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/quote_model.dart';
 import '../services/notification_service.dart';
@@ -20,7 +21,7 @@ class NotificationProvider with ChangeNotifier {
       await initialize();
 
       // 1. Fetch all data from Firestore
-      debugPrint("🔔 Memulai fetch quotes dari Firestore...");
+      if (kDebugMode) debugPrint("🔔 Memulai fetch quotes dari Firestore...");
       final snapshot = await _firestore.collection('quotes').get();
 
       if (snapshot.docs.isNotEmpty) {
@@ -28,7 +29,8 @@ class NotificationProvider with ChangeNotifier {
             .map((doc) => QuoteModel.fromMap(doc.id, doc.data()))
             .toList();
 
-        debugPrint("🔔 Berhasil fetch ${_quotes.length} quotes.");
+        if (kDebugMode)
+          debugPrint("🔔 Berhasil fetch ${_quotes.length} quotes.");
 
         // 2. Hapus semua jadwal lama agar tidak bentrok
         await _notificationService.cancelAllNotifications();
@@ -36,10 +38,10 @@ class NotificationProvider with ChangeNotifier {
         // 3. Jadwalkan dalam batch untuk 3 hari ke depan (solusi offline)
         await _notificationService.scheduleBatchNotifications(quotes: _quotes);
       } else {
-        debugPrint("⚠️ Koleksi 'quotes' kosong di Firestore!");
+        if (kDebugMode) debugPrint("⚠️ Koleksi 'quotes' kosong di Firestore!");
       }
     } catch (e) {
-      debugPrint("Error fetching quotes: $e");
+      if (kDebugMode) debugPrint("Error fetching quotes: $e");
     }
   }
 }

@@ -21,9 +21,6 @@ dependencies:
   # State Management
   provider: ^6.1.1
   
-  # Notifications - GANTI KE AWESOME NOTIFICATIONS
-  # awesome_notifications: ^0.9.3
-  
   # Local Storage
   shared_preferences: ^2.2.2
   

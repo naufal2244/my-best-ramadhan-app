@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/article_model.dart';
@@ -32,7 +33,7 @@ class FeedProvider with ChangeNotifier {
 
       await fetchBookmarks();
     } catch (e) {
-      debugPrint("Error fetching articles: $e");
+      if (kDebugMode) debugPrint("Error fetching articles: $e");
     } finally {
       _isLoading = false;
       notifyListeners();

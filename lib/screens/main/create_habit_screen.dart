@@ -32,29 +32,29 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     'Misal: Hafalan 1 Ayat',
     'Misal: Tadarus Setelah Subuh',
     'Misal: Muraja\'ah Hafalan',
-    
+
     // SHALAT SUNNAH (Prioritas #2)
     'Misal: Shalat Duha 4 Rakaat',
     'Misal: Shalat Tahajud',
     'Misal: Shalat Witir',
     'Misal: Rawatib 12 Rakaat',
-    
+
     // DZIKIR & DOA (Prioritas #3)
     'Misal: Dzikir Pagi & Petang',
     'Misal: Istighfar 100x',
     'Misal: Shalawat 100x',
     'Misal: Wirid Setelah Shalat',
-    
+
     // SEDEKAH & BERBAGI (Prioritas #4)
     'Misal: Sedekah Harian',
     'Misal: Infaq Setiap Hari',
     'Misal: Bagi Takjil',
-    
+
     // ILMU & PENGEMBANGAN DIRI (Prioritas #5)
     'Misal: Baca 1 Hadits',
     'Misal: Kajian Ramadhan',
     'Misal: Baca Tafsir 1 Ayat',
-    
+
     // KESEHATAN (Opsional, yang relevan)
     'Misal: Jaga Sahur Tepat Waktu',
     'Misal: Olahraga Ringan',
@@ -108,7 +108,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             type: _selectedType,
             targetPerWeek: _selectedType == 'mingguan' ? _targetPerWeek : null,
           );
-          Fluttertoast.showToast(msg: "Habit diperbarui!");
+          // Notifikasi akan ditampilkan di HomeScreen
         } else {
           // Mode Baru
           await habitProvider.addHabit(
@@ -119,7 +119,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             type: _selectedType,
             targetPerWeek: _selectedType == 'mingguan' ? _targetPerWeek : null,
           );
-          Fluttertoast.showToast(msg: "Amalan berhasil dibuat!");
+          // Notifikasi akan ditampilkan di HomeScreen
         }
 
         if (mounted) {

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
 class RamadhanUtils {
@@ -43,17 +44,17 @@ class RamadhanUtils {
     // Bersihkan floating point error (misal 2.000000000004 -> 2.0)
     dailyTarget = double.parse(dailyTarget.toStringAsFixed(8));
 
-    debugPrint("=== calculateDailyTarget ===");
-    debugPrint("startDate: $startDate");
-    debugPrint("totalRamadhanDays: $totalRamadhanDays");
-    debugPrint("currentDay: $currentDay");
-    debugPrint("totalTargetKhatam: $totalTargetKhatam");
-    debugPrint("totalTargetJuz: $totalTargetJuz");
-    debugPrint("completedJuz: $completedJuz");
-    debugPrint("remainingJuz: $remainingJuz");
-    debugPrint("remainingDays: $remainingDays");
-    debugPrint("dailyTarget: $dailyTarget");
-    debugPrint("===========================");
+    if (kDebugMode) debugPrint("=== calculateDailyTarget ===");
+    if (kDebugMode) debugPrint("startDate: $startDate");
+    if (kDebugMode) debugPrint("totalRamadhanDays: $totalRamadhanDays");
+    if (kDebugMode) debugPrint("currentDay: $currentDay");
+    if (kDebugMode) debugPrint("totalTargetKhatam: $totalTargetKhatam");
+    if (kDebugMode) debugPrint("totalTargetJuz: $totalTargetJuz");
+    if (kDebugMode) debugPrint("completedJuz: $completedJuz");
+    if (kDebugMode) debugPrint("remainingJuz: $remainingJuz");
+    if (kDebugMode) debugPrint("remainingDays: $remainingDays");
+    if (kDebugMode) debugPrint("dailyTarget: $dailyTarget");
+    if (kDebugMode) debugPrint("===========================");
     return dailyTarget;
   }
 

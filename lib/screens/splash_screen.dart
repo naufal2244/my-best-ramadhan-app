@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'onboarding_flow.dart';
+import 'package:provider/provider.dart';
+import '../providers/notification_provider.dart';
 import '../services/notification_service.dart';
 
 /// SPLASH SCREEN
@@ -42,6 +44,9 @@ class _SplashScreenState extends State<SplashScreen>
     // LOGIKA: Cek Login Status dulu, baru Cek Izin Notifikasi
     Future.delayed(const Duration(seconds: 3), () async {
       if (mounted) {
+        // Trigger penjadwalan notifikasi sedini mungkin (tanpa nunggu login)
+        context.read<NotificationProvider>().fetchAndScheduleNotifications();
+
         final authResult = FirebaseAuth.instance.currentUser;
 
         if (authResult == null) {
@@ -112,7 +117,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
               const SizedBox(height: 12),
               const Text(
-                'Mari jadikan Ramadhan Tahun ini berbeda',
+                'Jadikan Ramadhan Tahun ini berbeda',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white,

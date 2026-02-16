@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:intl/intl.dart';
@@ -67,7 +68,7 @@ class HabitProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching habits: $e");
+      if (kDebugMode) debugPrint("Error fetching habits: $e");
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -222,7 +223,7 @@ class HabitProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      debugPrint("Error syncing khatam habit: $e");
+      if (kDebugMode) debugPrint("Error syncing khatam habit: $e");
     }
   }
 
@@ -264,7 +265,7 @@ class HabitProvider with ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint("Error setting up initial habits: $e");
+      if (kDebugMode) debugPrint("Error setting up initial habits: $e");
     }
   }
 

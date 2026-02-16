@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/security_utils.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -135,15 +136,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       hint: 'nama@email.com',
                       prefixIcon: Icons.email_outlined,
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Email tidak boleh kosong';
-                        }
-                        if (!value.contains('@') || !value.contains('.')) {
-                          return 'Format email tidak valid';
-                        }
-                        return null;
-                      },
+                      validator: SecurityUtils.validateEmail,
                     ),
 
                     const SizedBox(height: 16),
@@ -165,15 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Kata sandi tidak boleh kosong';
-                        }
-                        if (value.length < 6) {
-                          return 'Kata sandi minimal 6 karakter';
-                        }
-                        return null;
-                      },
+                      validator: SecurityUtils.validatePassword,
                     ),
 
                     const SizedBox(height: 16),
@@ -346,7 +331,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         }
       } catch (e) {
         Fluttertoast.showToast(
-          msg: "Registrasi Gagal: ${e.toString().split('] ').last}",
+          msg: SecurityUtils.sanitizeErrorMessage(e),
           backgroundColor: Colors.red,
           textColor: Colors.white,
         );

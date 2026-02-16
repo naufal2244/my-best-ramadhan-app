@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/security_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 
 class EditProfileScreen extends StatefulWidget {
@@ -297,10 +298,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           )
                         : const Text(
-                            'Simpan',
+                            'SIMPAN',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
                             ),
                           ),
                   ),
@@ -408,23 +410,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           Navigator.pop(context, true);
         }
       } catch (e) {
-        debugPrint('Error saving profile: $e');
-        String errorMessage = 'Gagal memperbarui profil.';
-
-        if (e is FirebaseAuthException) {
-          debugPrint('Auth Error Code: ${e.code}');
-          if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-            errorMessage = 'Kata sandi lama salah.';
-          } else if (e.code == 'requires-recent-login') {
-            errorMessage = 'Sesi telah berakhir. Silakan login kembali.';
-          } else if (e.code == 'too-many-requests') {
-            errorMessage = 'Terlalu banyak percobaan. Coba lagi nanti.';
-          } else {
-            errorMessage = 'Error: ${e.message}';
-          }
-        }
-
-        _showSnackBar(errorMessage, isError: true);
+        _showSnackBar(SecurityUtils.sanitizeErrorMessage(e), isError: true);
       } finally {
         if (mounted) {
           setState(() => _isLoading = false);

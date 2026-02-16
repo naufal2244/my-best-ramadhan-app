@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.my_best_ramadhan_app">
+    package="com.naufal2244.my_best_ramadhan_app">
     
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
@@ -10,7 +10,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
-            android:name="com.example.my_best_ramadhan_app.MainActivity"
+            android:name="com.naufal2244.my_best_ramadhan_app.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:taskAffinity=""
@@ -36,6 +36,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Custom Notification Icon and Color -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_icon_color" />
         
         <!-- Receivers for scheduled notifications -->
         <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"

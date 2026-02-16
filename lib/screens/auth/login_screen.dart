@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../providers/auth_provider.dart';
 import '../../services/notification_service.dart';
+import '../../utils/security_utils.dart';
 import '../onboarding_flow.dart';
 import 'forgot_password_screen.dart';
 
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         Fluttertoast.showToast(
-          msg: "Login Gagal: ${e.toString().split('] ').last}",
+          msg: SecurityUtils.sanitizeErrorMessage(e),
           backgroundColor: Colors.red,
           textColor: Colors.white,
         );
@@ -305,15 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Email tidak boleh kosong';
-        }
-        if (!value.contains('@')) {
-          return 'Email tidak valid';
-        }
-        return null;
-      },
+      validator: SecurityUtils.validateEmail,
     );
   }
 

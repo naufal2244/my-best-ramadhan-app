@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/habit_provider.dart';
+import '../../utils/security_utils.dart';
 import '../onboarding/target_setting_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -269,7 +270,8 @@ class ProfileScreen extends StatelessWidget {
                         _showLogoutDialog(context);
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.red, width: 1.5),
+                        side: const BorderSide(
+                            color: Color(0xFF32D74B), width: 1.5),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -277,17 +279,35 @@ class ProfileScreen extends StatelessWidget {
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.logout, color: Colors.red, size: 20),
+                          Icon(Icons.logout,
+                              color: Color(0xFF32D74B), size: 20),
                           SizedBox(width: 8),
                           Text(
-                            'Keluar',
+                            'Keluar Akun',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Colors.red,
+                              color: Color(0xFF1A1A1A),
                             ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Delete Account Button (Security Requirement)
+                  Center(
+                    child: TextButton(
+                      onPressed: () => _showDeleteAccountDialog(context),
+                      child: Text(
+                        'Hapus Akun Permanen',
+                        style: TextStyle(
+                          color: Colors.red[300],
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ),
@@ -435,6 +455,89 @@ class ProfileScreen extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Hapus Akun Permanen?',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          content: const Text(
+            'Aksi ini tidak dapat dibatalkan. Semua data ibadah dan progres Ramadhan Anda akan dihapus selamanya.',
+            style: TextStyle(fontSize: 16),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'Batal',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                final authProvider = context.read<AuthProvider>();
+
+                try {
+                  await authProvider.deleteAccount();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      '/login',
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    _showErrorSnackBar(
+                        context, SecurityUtils.sanitizeErrorMessage(e));
+                  }
+                }
+              },
+              child: const Text(
+                'Hapus Selamanya',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 

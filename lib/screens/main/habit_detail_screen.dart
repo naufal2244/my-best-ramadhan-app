@@ -283,7 +283,6 @@ class HabitDetailScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context, 'delete'); // Signal to HomeScreen
-                  Fluttertoast.showToast(msg: "Amalan dihapus");
                 }
               } catch (e) {
                 Fluttertoast.showToast(msg: "Gagal menghapus: $e");

@@ -127,4 +127,45 @@ class AuthService {
       rethrow;
     }
   }
+
+  /// Hapus Akun & Semua Data Terkait
+  Future<void> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      final uid = user.uid;
+
+      // 1. Hapus sub-koleksi 'habits'
+      final habits = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('habits')
+          .get();
+      for (var doc in habits.docs) {
+        await doc.reference.delete();
+      }
+
+      // 2. Hapus sub-koleksi 'bookmarks'
+      final bookmarks = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('bookmarks')
+          .get();
+      for (var doc in bookmarks.docs) {
+        await doc.reference.delete();
+      }
+
+      // 3. Hapus dokumen utama user
+      await _firestore.collection('users').doc(uid).delete();
+
+      // 4. Hapus sesi Google Sign In agar tidak otomatis login lagi
+      await GoogleSignIn().signOut();
+
+      // 5. Hapus user dari Firebase Auth
+      await user.delete();
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

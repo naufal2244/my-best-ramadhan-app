@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Firebase Config (Critical Security)
+android/app/google-services.json
+android/app/google-services-old.json
+ios/Runner/GoogleService-Info.plist
+ios/Firebase/
+
+# Signing & Environment (Critical Security)
+*.jks
+*.keystore
+android/key.properties
+.env

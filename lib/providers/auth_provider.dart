@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
@@ -35,12 +36,12 @@ class AuthProvider extends ChangeNotifier {
   /// Ambil metadata Ramadhan dari Firestore
   Future<void> fetchRamadhanConfig() async {
     try {
-      debugPrint("Fetching ramadhan config from Firestore...");
+      if (kDebugMode) debugPrint("Fetching ramadhan config from Firestore...");
       final doc =
           await _firestore.collection('metadata').doc('ramadhan_config').get();
       if (doc.exists) {
         final data = doc.data()!;
-        debugPrint("Ramadhan config data: $data");
+        if (kDebugMode) debugPrint("Ramadhan config data: $data");
         if (data['startDate'] != null) {
           _ramadhanStartDate = (data['startDate'] as Timestamp).toDate();
           debugPrint("Parsed startDate: $_ramadhanStartDate");
@@ -51,10 +52,11 @@ class AuthProvider extends ChangeNotifier {
         }
         notifyListeners();
       } else {
-        debugPrint("Ramadhan config document does not exist in Firestore!");
+        if (kDebugMode)
+          debugPrint("Ramadhan config document does not exist in Firestore!");
       }
     } catch (e) {
-      debugPrint("Error fetching ramadhan config: $e");
+      if (kDebugMode) debugPrint("Error fetching ramadhan config: $e");
     }
   }
 
@@ -238,6 +240,17 @@ class AuthProvider extends ChangeNotifier {
   Future<void> resetPassword(String email) async {
     try {
       await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Hapus Akun
+  Future<void> deleteAccount() async {
+    try {
+      await _authService.deleteAccount();
+      _userData = null;
+      notifyListeners();
     } catch (e) {
       rethrow;
     }

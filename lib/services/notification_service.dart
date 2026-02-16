@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -7,6 +8,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:app_settings/app_settings.dart';
 import 'dart:io';
 import '../models/quote_model.dart';
+import '../utils/colors.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -19,19 +21,18 @@ class NotificationService {
   Future<void> initialize() async {
     tz.initializeTimeZones();
     try {
-      // getLocalTimezone returns a String in most versions, but lint says TimezoneInfo
-      // Let's use dynamic to be safe and print it
       final dynamic tzInfo = await FlutterTimezone.getLocalTimezone();
-      final String timeZoneName = tzInfo is String ? tzInfo : tzInfo.name;
+      final String timeZoneName = tzInfo
+          .toString(); // Ambil string langsung guna menghindari error getter 'name'
 
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-      debugPrint("🔔 Timezone diatur ke: $timeZoneName");
+      if (kDebugMode) debugPrint("🔔 Timezone diatur ke: $timeZoneName");
     } catch (e) {
-      debugPrint("⚠️ Gagal mengatur timezone lokal, fallback ke UTC: $e");
+      if (kDebugMode) debugPrint("⚠️ Gagal mengatur timezone lokal: $e");
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('ic_notification');
 
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
@@ -55,17 +56,20 @@ class NotificationService {
   }
 
   Future<bool> requestPermissions() async {
-    debugPrint("🔔 Memulai requestPermissions...");
+    if (kDebugMode) debugPrint("🔔 Memulai requestPermissions...");
     // 1. Cek status izin saat ini menggunakan permission_handler
     PermissionStatus status = await Permission.notification.status;
-    debugPrint("🔔 Status awal: $status");
+    if (kDebugMode) debugPrint("🔔 Status awal: $status");
 
     if (status.isPermanentlyDenied) {
-      debugPrint("🔔 Status permanen ditolak, membuka settings notifikasi...");
+      if (kDebugMode)
+        debugPrint(
+            "🔔 Status permanen ditolak, membuka settings notifikasi...");
       await AppSettings.openAppSettings(type: AppSettingsType.notification);
       return false;
     } else if (status.isDenied || status.isLimited || status.isRestricted) {
-      debugPrint("🔔 Status denied/limited, meminta izin native...");
+      if (kDebugMode)
+        debugPrint("🔔 Status denied/limited, meminta izin native...");
 
       // Catat waktu mulai request untuk mendeteksi silent-failure
       final DateTime startTime = DateTime.now();
@@ -92,7 +96,8 @@ class NotificationService {
         return false;
       }
     } else {
-      debugPrint("🔔 Status sudah granted atau lainnya: $status");
+      if (kDebugMode)
+        debugPrint("🔔 Status sudah granted atau lainnya: $status");
       // Jika sudah granted, panggil saja request bawaan untuk memastikan channel terdaftar
       if (Platform.isAndroid) {
         await flutterLocalNotificationsPlugin
@@ -112,13 +117,14 @@ class NotificationService {
     }
 
     final finalStatus = await Permission.notification.isGranted;
-    debugPrint("🔔 Hasil akhir isGranted: $finalStatus");
+    if (kDebugMode) debugPrint("🔔 Hasil akhir isGranted: $finalStatus");
     return finalStatus;
   }
 
   Future<void> cancelAllNotifications() async {
     await flutterLocalNotificationsPlugin.cancelAll();
-    debugPrint("🔔 Semua jadwal notifikasi lama telah dihapus.");
+    if (kDebugMode)
+      debugPrint("🔔 Semua jadwal notifikasi lama telah dihapus.");
   }
 
   Future<void> scheduleBatchNotifications({
@@ -127,28 +133,35 @@ class NotificationService {
     if (quotes.isEmpty) return;
 
     final now = DateTime.now();
-    // SLOT PRODUKSI: Jam 7, 9, 12, 15, 18, 21
-    final List<int> productionSlots = [7, 9, 12, 15, 18, 21];
+    // SLOT PRODUKSI: Jam 7, 9, 12, 17, 20
+    final List<Map<String, int>> productionSlots = [
+      {'hour': 7, 'minute': 0},
+      {'hour': 9, 'minute': 0},
+      {'hour': 12, 'minute': 0},
+      {'hour': 17, 'minute': 0},
+      {'hour': 21, 'minute': 0},
+    ];
+
     int quoteIndex = 0;
     int notificationCount = 0;
 
     // Jadwalkan untuk 3 hari ke depan (agar batch tertanam di sistem)
     for (int day = 0; day < 3; day++) {
-      for (int hour in productionSlots) {
+      for (var slot in productionSlots) {
         var scheduledDate = DateTime(
           now.year,
           now.month,
           now.day + day,
-          hour,
-          0,
+          slot['hour']!,
+          slot['minute']!,
         );
 
         // Jangan jadwalkan jika waktu sudah lewat di hari pertama
         if (scheduledDate.isBefore(now)) continue;
 
         final quote = quotes[quoteIndex % quotes.length];
-        // Generate unique ID berdasarkan hari dan jam (misal Hari 0 Jam 7 -> ID 7, Hari 1 Jam 7 -> ID 107)
-        final int id = (day * 100) + hour;
+        // Generate unique ID berdasarkan hari, jam, dan menit
+        final int id = (day * 1000) + (slot['hour']! * 60) + slot['minute']!;
 
         // --- FORMAT TAMPILAN SESUAI REQUEST ---
         String title = "✨ Tadabbur Hari Ini";
@@ -173,6 +186,7 @@ class NotificationService {
               channelDescription: 'Renungan harian Al-Qur\'an dan Hadits',
               importance: Importance.max,
               priority: Priority.high,
+              color: AppColors.primaryGreen,
               styleInformation: BigTextStyleInformation(
                 bodyText,
                 contentTitle: title,
@@ -181,7 +195,6 @@ class NotificationService {
             iOS: const DarwinNotificationDetails(),
           ),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-          // HAPUS matchDateTimeComponents agar tidak muncul 3x berbarengan
         );
 
         quoteIndex++;
@@ -190,7 +203,7 @@ class NotificationService {
     }
 
     debugPrint(
-        "🔔 PRODUKSI: $notificationCount notif dijadwalkan untuk 3 hari kedepan sukses!");
+        "🔔 Notifikasi harian dijadwalkan (slot produksi) sukses! Jumlah: $notificationCount");
     await checkPendingNotifications();
   }
 
@@ -236,6 +249,7 @@ class NotificationService {
           channelDescription: 'Pengingat harian Ramadhan',
           importance: Importance.max,
           priority: Priority.high,
+          color: AppColors.primaryGreen,
         ),
         iOS: DarwinNotificationDetails(),
       ),
@@ -254,7 +268,8 @@ class NotificationService {
   Future<void> checkPendingNotifications() async {
     final List<PendingNotificationRequest> pendingRequests =
         await flutterLocalNotificationsPlugin.pendingNotificationRequests();
-    debugPrint("🔔 JUMLAH NOTIFIKASI PENDING: ${pendingRequests.length}");
+    if (kDebugMode)
+      debugPrint("🔔 JUMLAH NOTIFIKASI PENDING: ${pendingRequests.length}");
     for (var request in pendingRequests) {
       debugPrint("   - ID: ${request.id}, Title: ${request.title}");
     }
@@ -269,6 +284,7 @@ class NotificationService {
       channelDescription: 'Notifikasi langsung',
       importance: Importance.max,
       priority: Priority.high,
+      color: AppColors.primaryGreen,
     );
 
     const NotificationDetails details = NotificationDetails(

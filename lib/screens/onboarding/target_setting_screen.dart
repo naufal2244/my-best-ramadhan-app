@@ -100,312 +100,319 @@ class _TargetSettingScreenState extends State<TargetSettingScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              children: [
+                const SizedBox(height: 16), // Reduced from 40
 
-              // Title
-              const Text(
-                'Target Khatam Al-Qur\'an 📖',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                // Title
+                const Text(
+                  'Target Khatam Al-Qur\'an 📖',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18, // Reduced from 24
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1A1A),
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 12),
+                const SizedBox(height: 12),
 
-              Text(
-                'Berapa kali kamu ingin Khatam Al-Qur\'an di bulan Ramadhan tahun ini?',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  height: 1.5,
+                Text(
+                  'Berapa kali kamu ingin Khatam Al-Qur\'an di bulan Ramadhan tahun ini?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12, // Reduced from 14/16
+                    color: Colors.grey[600],
+                    height: 1.4,
+                  ),
                 ),
-              ),
 
-              const Spacer(),
+                const SizedBox(
+                    height: 16), // Reduced from 32/fixed spacing for scrolling
 
-              // Counter with animation
-              TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 300),
-                tween: Tween(begin: 0, end: _targetPages.toDouble()),
-                builder: (context, value, child) {
-                  return Container(
-                    padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF32D74B), Color(0xFF63E677)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                // Counter with animation
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 300),
+                  tween: Tween(begin: 0, end: _targetPages.toDouble()),
+                  builder: (context, value, child) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 20), // Reduced from 24/32
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF32D74B), Color(0xFF63E677)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(20), // Reduced from 24
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF32D74B).withOpacity(0.3),
+                            blurRadius: 30,
+                            offset: const Offset(0, 15),
+                          ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF32D74B).withOpacity(0.3),
-                          blurRadius: 30,
-                          offset: const Offset(0, 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Minus button
+                          _buildCounterButton(
+                            icon: Icons.remove,
+                            onTap: () => _updateTarget(-1),
+                            enabled: _targetPages > 1,
+                          ),
+
+                          const SizedBox(width: 24), // Reduced from 32/48
+
+                          // Number display
+                          Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(
+                              fontSize: 40, // Reduced from 64/72
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          const SizedBox(width: 24), // Reduced from 32/48
+
+                          // Plus button
+                          _buildCounterButton(
+                            icon: Icons.add,
+                            onTap: () => _updateTarget(1),
+                            enabled: true,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 12), // Reduced from 16/24
+
+                const Text(
+                  'Kali Khatam',
+                  style: TextStyle(
+                    fontSize: 14, // Reduced from 16/18
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1A1A1A),
+                  ),
+                ),
+
+                if (widget.isEditing) ...[
+                  const SizedBox(height: 8), // Reduced from 16/20
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue[100]!),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline,
+                            color: Colors.blue[700], size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Target harian akan otomatis menyesuaikan sisa juz dan sisa hari Ramadhan agar kamu tetap bisa khatam tepat waktu.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue[800],
+                              height: 1.4,
+                            ),
+                          ),
                         ),
                       ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 12), // Reduced from 24
+
+                // Stats
+                Container(
+                  padding: const EdgeInsets.all(12), // Reduced from 16/20
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F5F5),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Untuk mencapai target ini:',
+                        style: TextStyle(
+                          fontSize: 13, // Reduced from 14
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A1A),
+                        ),
+                      ),
+                      const SizedBox(height: 8), // Reduced from 12/16
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              '📅',
+                              'Per Hari',
+                              juzPerDay,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              '📖',
+                              'Total Target',
+                              '$totalJuz Juz',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12), // Reduced from 20/24
+
+                Text(
+                  '* Berdasarkan standar Mushaf Utsmani & Kemenag RI\n(15 baris per halaman, total 604 halaman)',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 10, // Reduced from 11
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 8), // Reduced from 12
+                Text(
+                  'Tenang! Kamu bisa ubah target ini kapan saja 😊',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12, // Reduced from 14
+                    color: Colors.grey[500],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+
+                const SizedBox(height: 16), // Reduced from 24/32
+
+                // Continue button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48, // Reduced from 54
+                  child: ElevatedButton(
+                    onPressed: widget.isEditing
+                        ? () async {
+                            // Simpan target baru ke database
+                            final auth = context.read<AuthProvider>();
+                            final habitProvider = context.read<HabitProvider>();
+
+                            // Ambil data terkini
+                            double completedJuz =
+                                auth.userData?.completedJuz ?? 0.0;
+                            int totalTargetJuz = _targetPages * 30;
+
+                            // Cek apakah hari ini sudah selesai
+                            final khatamHabit = habitProvider.habits.firstWhere(
+                              (h) => h.isAutoGenerated == true,
+                              orElse: () => HabitModel(
+                                  id: '',
+                                  name: '',
+                                  scheduledDays: [],
+                                  isAutoGenerated: true),
+                            );
+                            final todayKey =
+                                DateFormat('yyyy-MM-dd').format(DateTime.now());
+                            bool isTodayDone =
+                                khatamHabit.completionStatus[todayKey] ?? false;
+
+                            // Hitung sisa hari
+                            int remainingDays = RamadhanUtils.getRemainingDays(
+                              auth.ramadhanStartDate,
+                              auth.totalRamadhanDays,
+                            );
+
+                            double dailyTargetToLock;
+
+                            if (isTodayDone) {
+                              // Jika sudah selesai hari ini, hitung untuk hari-hari kedepan
+                              int nextDays = remainingDays - 1;
+                              double remainingJuz =
+                                  totalTargetJuz - completedJuz;
+
+                              if (nextDays > 0) {
+                                dailyTargetToLock = remainingJuz / nextDays;
+                              } else {
+                                dailyTargetToLock = 0;
+                              }
+                            } else {
+                              // Jika belum selesai hari ini, gunakan hitungan standar
+                              dailyTargetToLock =
+                                  RamadhanUtils.calculateDailyTarget(
+                                totalTargetKhatam: _targetPages,
+                                completedJuz: completedJuz,
+                                startDate: auth.ramadhanStartDate,
+                                totalRamadhanDays: auth.totalRamadhanDays,
+                              );
+                            }
+
+                            // Bersihkan floating point error
+                            dailyTargetToLock = double.parse(
+                                dailyTargetToLock.toStringAsFixed(8));
+
+                            await auth.updateTargetKhatam(
+                                _targetPages, dailyTargetToLock);
+
+                            // Sync habit khatam otomatis
+                            if (context.mounted) {
+                              await habitProvider.syncKhatamHabit(
+                                _targetPages,
+                                completedJuz,
+                                auth.ramadhanStartDate,
+                                auth.totalRamadhanDays,
+                                dailyTargetToLock,
+                              );
+                              Navigator.pop(context, 'target_updated');
+                            }
+                          }
+                        : (widget.onNext ??
+                            () => Navigator.pushNamed(
+                                context, '/onboarding-tips',
+                                arguments: _targetPages)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF32D74B),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Minus button
-                        _buildCounterButton(
-                          icon: Icons.remove,
-                          onTap: () => _updateTarget(-1),
-                          enabled: _targetPages > 1,
-                        ),
-
-                        const SizedBox(width: 48),
-
-                        // Number display
                         Text(
-                          value.toInt().toString(),
+                          widget.isEditing ? 'Simpan' : 'Lanjut',
                           style: const TextStyle(
-                            fontSize: 72,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-
-                        const SizedBox(width: 48),
-
-                        // Plus button
-                        _buildCounterButton(
-                          icon: Icons.add,
-                          onTap: () => _updateTarget(1),
-                          enabled: true,
-                        ),
+                        if (!widget.isEditing) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.arrow_forward_rounded, size: 20),
+                        ],
                       ],
                     ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              const Text(
-                'Kali Khatam',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-
-              if (widget.isEditing) ...[
-                const SizedBox(height: 20),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue[100]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline,
-                          color: Colors.blue[700], size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Target harian akan otomatis menyesuaikan sisa juz dan sisa hari Ramadhan agar kamu tetap bisa khatam tepat waktu.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue[800],
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
+
+                const SizedBox(height: 20), // Reduced from 32/48
               ],
-
-              const SizedBox(height: 16),
-
-              // Stats
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Untuk mencapai target ini:',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            '📅',
-                            'Per Hari',
-                            juzPerDay,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildStatCard(
-                            '📖',
-                            'Total Target',
-                            '$totalJuz Juz',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              Text(
-                '* Berdasarkan standar Mushaf Utsmani & Kemenag RI\n(15 baris per halaman, total 604 halaman)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.green[700],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Tenang! Kamu bisa ubah target ini kapan saja 😊',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Continue button
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: widget.isEditing
-                      ? () async {
-                          // Simpan target baru ke database
-                          final auth = context.read<AuthProvider>();
-                          final habitProvider = context.read<HabitProvider>();
-
-                          // Ambil data terkini
-                          double completedJuz =
-                              auth.userData?.completedJuz ?? 0.0;
-                          int totalTargetJuz = _targetPages * 30;
-
-                          // Cek apakah hari ini sudah selesai
-                          final khatamHabit = habitProvider.habits.firstWhere(
-                            (h) => h.isAutoGenerated == true,
-                            orElse: () => HabitModel(
-                                id: '',
-                                name: '',
-                                scheduledDays: [],
-                                isAutoGenerated: true),
-                          );
-                          final todayKey =
-                              DateFormat('yyyy-MM-dd').format(DateTime.now());
-                          bool isTodayDone =
-                              khatamHabit.completionStatus[todayKey] ?? false;
-
-                          // Hitung sisa hari
-                          int remainingDays = RamadhanUtils.getRemainingDays(
-                            auth.ramadhanStartDate,
-                            auth.totalRamadhanDays,
-                          );
-
-                          double dailyTargetToLock;
-
-                          if (isTodayDone) {
-                            // Jika sudah selesai hari ini, hitung untuk hari-hari kedepan
-                            int nextDays = remainingDays - 1;
-                            double remainingJuz = totalTargetJuz - completedJuz;
-
-                            if (nextDays > 0) {
-                              dailyTargetToLock = remainingJuz / nextDays;
-                            } else {
-                              dailyTargetToLock = 0;
-                            }
-                          } else {
-                            // Jika belum selesai hari ini, gunakan hitungan standar
-                            dailyTargetToLock =
-                                RamadhanUtils.calculateDailyTarget(
-                              totalTargetKhatam: _targetPages,
-                              completedJuz: completedJuz,
-                              startDate: auth.ramadhanStartDate,
-                              totalRamadhanDays: auth.totalRamadhanDays,
-                            );
-                          }
-
-                          // Bersihkan floating point error
-                          dailyTargetToLock = double.parse(
-                              dailyTargetToLock.toStringAsFixed(8));
-
-                          await auth.updateTargetKhatam(
-                              _targetPages, dailyTargetToLock);
-
-                          // Sync habit khatam otomatis
-                          if (context.mounted) {
-                            await habitProvider.syncKhatamHabit(
-                              _targetPages,
-                              completedJuz,
-                              auth.ramadhanStartDate,
-                              auth.totalRamadhanDays,
-                              dailyTargetToLock,
-                            );
-                            Navigator.pop(context, 'target_updated');
-                          }
-                        }
-                      : (widget.onNext ??
-                          () => Navigator.pushNamed(context, '/onboarding-tips',
-                              arguments: _targetPages)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF32D74B),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.isEditing ? 'Simpan' : 'Lanjut',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (!widget.isEditing) ...[
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward_rounded, size: 20),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 48),
-            ],
+            ),
           ),
         ),
       ),

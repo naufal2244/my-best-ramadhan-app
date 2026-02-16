@@ -84,7 +84,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const Text(
                   'Lupa Kata Sandi',
                   style: TextStyle(
-                    fontSize: 28,
+                    fontSize: 22, // Reduced from 28
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                     letterSpacing: -0.5,
@@ -97,7 +97,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const Text(
                   'Silahkan masukkan email Anda untuk menerima link reset password',
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 13, // Reduced from 15
                     color: Color(0xFF9E9E9E),
                     height: 1.5,
                   ),
@@ -202,7 +202,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 48, // Reduced from 54
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleResetPassword,
         style: ElevatedButton.styleFrom(
@@ -227,7 +227,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             : const Text(
                 'Kirim Link Reset',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, // Reduced from 16
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -297,7 +297,7 @@ class ForgotPasswordSuccessScreen extends StatelessWidget {
               const Text(
                 'Cek Email Anda!',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 22, // Reduced from 28
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF1A1A1A),
                   letterSpacing: -0.5,
@@ -366,7 +366,7 @@ class ForgotPasswordSuccessScreen extends StatelessWidget {
               // BUTTON KEMBALI KE LOGIN
               SizedBox(
                 width: double.infinity,
-                height: 54,
+                height: 48, // Reduced from 54
                 child: ElevatedButton(
                   onPressed: () {
                     // Kembali ke login screen
@@ -383,7 +383,7 @@ class ForgotPasswordSuccessScreen extends StatelessWidget {
                   child: const Text(
                     'Kembali ke Login',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14, // Reduced from 16
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -402,7 +402,7 @@ class ForgotPasswordSuccessScreen extends StatelessWidget {
                   'Tidak menerima email? Kirim Ulang',
                   style: TextStyle(
                     color: Color(0xFF32D74B),
-                    fontSize: 14,
+                    fontSize: 12, // Reduced from 14
                     fontWeight: FontWeight.w600,
                   ),
                 ),

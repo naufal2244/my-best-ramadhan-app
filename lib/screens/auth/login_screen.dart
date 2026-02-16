@@ -224,15 +224,15 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Widget Logo Aplikasi dengan gradient
   Widget _buildLogo() {
     return Container(
-      width: 120,
-      height: 120,
+      width: 100, // Reduced from 120
+      height: 100, // Reduced from 120
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF32D74B).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: const Color(0xFF32D74B).withOpacity(0.25),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -250,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return const Text(
       'My Best Ramadhan',
       style: TextStyle(
-        fontSize: 28,
+        fontSize: 22, // Reduced from 28
         fontWeight: FontWeight.bold,
         color: Color(0xFF1A1A1A),
         letterSpacing: -0.5,
@@ -264,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
       'Jadikan Ramadhan Tahun ini\nRamadhan terbaik mu!',
       textAlign: TextAlign.center,
       style: TextStyle(
-        fontSize: 14,
+        fontSize: 12, // Reduced from 14
         color: Color(0xFF1A1A1A),
         fontWeight: FontWeight.w600,
         height: 1.4,
@@ -284,22 +284,22 @@ class _LoginScreenState extends State<LoginScreen> {
         filled: true,
         fillColor: const Color(0xFFF5F5F5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10), // Reduced from 12
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
             color: Color(0xFF32D74B),
             width: 2,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(
             color: Colors.red,
             width: 2,
@@ -372,7 +372,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 48, // Reduced from 54
       child: ElevatedButton(
         onPressed: isLoading ? null : _handleEmailLogin,
         style: ElevatedButton.styleFrom(
@@ -396,7 +396,7 @@ class _LoginScreenState extends State<LoginScreen> {
             : const Text(
                 'Masuk',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14, // Reduced from 16
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -420,7 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'atau',
             style: TextStyle(
               color: Colors.grey,
-              fontSize: 14,
+              fontSize: 12, // Reduced from 14
             ),
           ),
         ),
@@ -438,7 +438,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildGoogleButton() {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 48, // Reduced from 54
       child: OutlinedButton.icon(
         onPressed: _isLoading ? null : _handleGoogleLogin,
         style: OutlinedButton.styleFrom(
@@ -462,7 +462,7 @@ class _LoginScreenState extends State<LoginScreen> {
         label: const Text(
           'Lanjutkan dengan Google',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 14, // Reduced from 16
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -481,7 +481,7 @@ class _LoginScreenState extends State<LoginScreen> {
               'Belum memiliki akun? ',
               style: TextStyle(
                 color: Colors.grey,
-                fontSize: 14,
+                fontSize: 12, // Reduced from 14
               ),
             ),
             TextButton(
@@ -498,7 +498,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 'Buat Akun',
                 style: TextStyle(
                   color: Color(0xFF32D74B),
-                  fontSize: 14,
+                  fontSize: 12, // Reduced from 14
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -524,7 +524,7 @@ class _LoginScreenState extends State<LoginScreen> {
             'Lupa Kata Sandi?',
             style: TextStyle(
               color: Color(0xFF32D74B),
-              fontSize: 14,
+              fontSize: 12, // Reduced from 14
               fontWeight: FontWeight.w600,
             ),
           ),

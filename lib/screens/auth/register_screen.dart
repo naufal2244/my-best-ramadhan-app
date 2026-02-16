@@ -89,7 +89,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     const Text(
                       'Yuk Mulai Perjalanan\nRamadhanmu! 🌙',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 22, // Reduced from 28
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF1A1A1A),
                         height: 1.3,
@@ -102,13 +102,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                     Text(
                       'Buat akun dan raih Ramadhan terbaik yang pernah kamu alami!',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 13, // Reduced from 16
                         color: Colors.grey[600],
                         height: 1.5,
                       ),
                     ),
 
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 24), // Reduced from 40
 
                     // Full Name Input
                     _buildTextField(
@@ -196,7 +196,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     // Register Button
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
+                      height: 48, // Reduced from 54
                       child: ElevatedButton(
                         onPressed: context.watch<AuthProvider>().isLoading
                             ? null
@@ -221,7 +221,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             : const Text(
                                 'DAFTAR SEKARANG',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 14, // Reduced from 16
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),
@@ -238,7 +238,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                         Text(
                           'Sudah punya akun? ',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12, // Reduced from 14
                             color: Colors.grey[600],
                           ),
                         ),
@@ -247,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           child: const Text(
                             'Masuk di sini',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 12, // Reduced from 14
                               color: Color(0xFF32D74B),
                               fontWeight: FontWeight.w600,
                             ),
@@ -291,23 +291,23 @@ class _RegisterScreenState extends State<RegisterScreen>
         filled: true,
         fillColor: const Color(0xFFF5F5F5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10), // Reduced from 12
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Color(0xFF32D74B), width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: Colors.red, width: 2),
         ),
       ),

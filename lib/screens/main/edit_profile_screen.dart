@@ -79,7 +79,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'Edit Profil',
             style: TextStyle(
               color: Color(0xFF1A1A1A),
-              fontSize: 20,
+              fontSize: 16, // Reduced from 20
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -99,19 +99,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Stack(
                     children: [
                       Container(
-                        width: 120,
-                        height: 120,
+                        width: 80, // Reduced from 120
+                        height: 80, // Reduced from 120
                         decoration: BoxDecoration(
                           color: const Color(0xFFE8F9EC),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: const Color(0xFF32D74B),
-                            width: 3,
+                            width: 2.5, // Reduced from 3
                           ),
                         ),
                         child: const Icon(
                           Icons.person,
-                          size: 60,
+                          size: 44, // Reduced from 60
                           color: Color(0xFF32D74B),
                         ),
                       ),
@@ -125,7 +125,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const Text(
                   'Informasi Pribadi',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15, // Reduced from 18
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                   ),
@@ -169,7 +169,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 const Text(
                   'Ubah Kata Sandi',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15, // Reduced from 18
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                   ),
@@ -277,7 +277,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 // Save Button
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
+                  height: 48, // Reduced from 54
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleSave,
                     style: ElevatedButton.styleFrom(
@@ -300,7 +300,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         : const Text(
                             'SIMPAN',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14, // Reduced from 16
                               fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
                             ),

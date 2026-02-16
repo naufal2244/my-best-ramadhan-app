@@ -17,86 +17,102 @@ class ProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Header with gradient
+            // Header with gradient - Responsive height
             SliverToBoxAdapter(
-              child: Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF32D74B), Color(0xFF63E677)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              child: Builder(builder: (context) {
+                final screenHeight = MediaQuery.of(context).size.height;
+                final screenWidth = MediaQuery.of(context).size.width;
+                // Header takes approx 24% of screen height, but with limits
+                final headerHeight = (screenHeight * 0.24).clamp(180.0, 240.0);
+
+                return Container(
+                  width: screenWidth,
+                  constraints: BoxConstraints(minHeight: headerHeight),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.05,
+                    vertical:
+                        12.0, // Increased vertical padding for content safety
                   ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(32),
-                    bottomRight: Radius.circular(32),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF32D74B), Color(0xFF63E677)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(24),
+                      bottomRight: Radius.circular(24),
+                    ),
                   ),
-                ),
-                child: Consumer<AuthProvider>(
-                  builder: (context, auth, _) {
-                    final userData = auth.userData;
-                    return Column(
-                      children: [
-                        const SizedBox(height: 20),
+                  child: Consumer<AuthProvider>(
+                    builder: (context, auth, _) {
+                      final userData = auth.userData;
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(height: screenHeight * 0.02),
 
-                        // Profile Picture
-                        Container(
-                          width: 100,
-                          height: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
+                          // Profile Picture - Responsive size
+                          Container(
+                            width: (screenWidth * 0.18).clamp(60.0, 75.0),
+                            height: (screenWidth * 0.18).clamp(60.0, 75.0),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: (screenWidth * 0.1).clamp(35.0, 45.0),
+                              color: const Color(0xFF32D74B),
+                            ),
                           ),
-                          child: const Icon(
-                            Icons.person,
-                            size: 50,
-                            color: Color(0xFF32D74B),
+
+                          SizedBox(height: screenHeight * 0.015),
+
+                          // Name
+                          Text(
+                            userData?.displayName ?? 'User',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: (screenWidth * 0.05)
+                                  .clamp(16.0, 20.0), // Smaller
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 4),
 
-                        // Name
-                        Text(
-                          userData?.displayName ?? 'User',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          // Email
+                          Text(
+                            userData?.email ?? '',
+                            style: TextStyle(
+                              fontSize: (screenWidth * 0.032)
+                                  .clamp(11.0, 13.0), // Smaller
+                              color: Colors.white.withOpacity(0.9),
+                            ),
                           ),
-                        ),
 
-                        const SizedBox(height: 8),
+                          SizedBox(height: screenHeight * 0.025),
 
-                        // Email
-                        Text(
-                          userData?.email ?? '',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Redesigned Prominent Stat (Centered & Not Full Width)
-                        Center(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 32, vertical: 16),
+                          // Redesigned Prominent Stat
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.05,
+                                vertical: screenHeight * 0.008),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                   color: Colors.white.withOpacity(0.3),
-                                  width: 1.5),
+                                  width: 1.0),
                             ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -105,23 +121,23 @@ class ProfileScreen extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     const Icon(Icons.menu_book_rounded,
-                                        color: Colors.white, size: 20),
-                                    const SizedBox(width: 8),
+                                        color: Colors.white, size: 12),
+                                    const SizedBox(width: 4),
                                     Text(
                                       'Target Khatam',
                                       style: TextStyle(
-                                        fontSize: 13,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.w500,
                                         color: Colors.white.withOpacity(0.9),
                                       ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 1),
                                 Text(
                                   '${userData?.targetKhatam ?? 1} KALI',
                                   style: const TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     letterSpacing: 0.5,
@@ -130,19 +146,17 @@ class ProfileScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                        ),
-
-                        const SizedBox(height: 20),
-                      ],
-                    );
-                  },
-                ),
-              ),
+                        ],
+                      );
+                    },
+                  ),
+                );
+              }),
             ),
 
             // Menu Items
             SliverPadding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(16.0), // Reduced from 24.0
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   const SizedBox(height: 8),
@@ -331,12 +345,13 @@ class ProfileScreen extends StatelessWidget {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(12), // Reduced from 16
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 16, vertical: 12), // Reduced from 16
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           children: [
@@ -366,16 +381,16 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14, // Reduced from 16
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF1A1A1A),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2), // Reduced from 4
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12, // Reduced from 14
                       color: Colors.grey[600],
                     ),
                   ),

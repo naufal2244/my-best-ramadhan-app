@@ -36,25 +36,31 @@ Gradient:
 
 ---
 
-## 📐 DESIGN TOKENS
+## 📐 DESIGN TOKENS (COMPACT STANDARD)
+*Optimasi untuk HD+ (Realme) & QHD+ (Pixel)*
 
 ```dart
 // File: lib/utils/constants.dart
 
-Spacing:
-- S = 8px    M = 16px    L = 24px    XL = 32px
+Spacing (Pangkas 20%):
+- XS = 4px   S = 6px    M = 10px    L = 14px    XL = 20px   XXL = 28px
 
-Border Radius:
-- S = 8px    M = 12px (default)    L = 16px    Circle = 999px
+Border Radius (Ramping):
+- S = 6px    M = 10px (default)    L = 14px    XL = 20px   Circle = 999px
 
-Font Sizes:
-- S = 14px   M = 16px   L = 18px   XL = 24px   XXL = 32px
+Font Sizes (Standard Mobile):
+- XS = 10px  S = 11px   M = 13px    L = 15px    XL = 18px   XXL = 22px
 
 Button Height:
-- Default = 54px
+- Medium (Default) = 48px
+- Small = 40px
+- Large = 54px
 
-Logo Size:
-- Default = 120px
+FAB Size:
+- Default = 56px (Standard MD)
+
+Responsive Header Ratio:
+- Height = 22% - 25% dari tinggi layar
 ```
 
 ---
@@ -278,13 +284,18 @@ flutter run
 
 ## 🎨 DESIGN GUIDELINES
 
-### **Typography:**
-- **Display:** 32px, Bold
-- **Heading:** 24-28px, Bold
-- **Subheading:** 18px, SemiBold
-- **Body:** 14-16px, Regular
-- **Button:** 16px, SemiBold
-- **Caption:** 12px, Regular
+### **Typography (Compact Edition):**
+- **Display (Splash/Title):** 28-32px, Bold
+- **Heading 1:** 20-24px, Bold
+- **Heading 2:** 16-18px, SemiBold
+- **Body 1 (Main):** 13-14px, Regular/SemiBold
+- **Body 2 (Sub):** 11-12px, Regular
+- **Button Text:** 14-16px, SemiBold (Responsive)
+- **Caption:** 10px, Regular/Medium
+
+### **Responsive Rule:**
+Gunakan rumus `(screenWidth * X).clamp(min, max)` untuk elemen kritikal agar lebar/ukuran font tidak merusak layout saat HP user pakai settingan "Font Gede".
+```
 
 ### **Spacing Pattern:**
 - Section: 24-32px

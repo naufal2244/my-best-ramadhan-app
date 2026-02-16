@@ -48,13 +48,13 @@ class _FeedScreenState extends State<FeedScreen> {
                 elevation: 0,
                 automaticallyImplyLeading: false, // Hapus back button jika ada
                 centerTitle: true,
-                toolbarHeight: 100, // Meningkatkan tinggi agar tidak mepet
+                toolbarHeight: 65, // Reduced from 100
                 title: const Padding(
-                  padding: EdgeInsets.only(top: 24),
+                  padding: EdgeInsets.only(top: 8), // Reduced from 24
                   child: Text(
                     'Feed',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 18, // Reduced from 24
                       color: Color(0xFF1A1A1A),
                       fontWeight: FontWeight.bold,
                     ),
@@ -71,7 +71,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         Row(
                           children: _tabs.map((tab) => _buildTab(tab)).toList(),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8), // Reduced from 16
                       ],
                     ),
                   ),
@@ -80,7 +80,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
               // Articles List
               SliverPadding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.fromLTRB(
+                    20.0, 8.0, 20.0, 20.0), // Reduced from 24.0
                 sliver: Consumer<FeedProvider>(
                   builder: (context, provider, child) {
                     if (provider.isLoading) {
@@ -137,15 +138,16 @@ class _FeedScreenState extends State<FeedScreen> {
       onTap: () => setState(() => _selectedTab = tab),
       child: Container(
         margin: const EdgeInsets.only(right: 12),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(
+            horizontal: 14, vertical: 6), // Reduced from 16/8
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFF32D74B) : const Color(0xFFF5F5F5),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16), // Reduced from 20
         ),
         child: Text(
           tab,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 12, // Reduced from 14
             fontWeight: FontWeight.w600,
             color: isSelected ? Colors.white : const Color(0xFF9E9E9E),
           ),
@@ -177,12 +179,12 @@ class _FeedScreenState extends State<FeedScreen> {
           children: [
             // Image
             Container(
-              height: 180,
+              height: 140, // Reduced from 180
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F9EC),
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                  topLeft: Radius.circular(12), // Reduced from 16
+                  topRight: Radius.circular(12),
                 ),
                 image: article.thumbnailUrl.isNotEmpty
                     ? DecorationImage(
@@ -195,20 +197,20 @@ class _FeedScreenState extends State<FeedScreen> {
                   ? Center(
                       child: Icon(
                         Icons.play_circle_outline,
-                        size: 60,
+                        size: 40, // Reduced from 60
                         color: const Color(0xFF32D74B).withOpacity(0.5),
                       ),
                     )
                   : Center(
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(8), // Reduced from 12
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.3),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
                           Icons.play_arrow,
-                          size: 32,
+                          size: 24, // Reduced from 32
                           color: Colors.white,
                         ),
                       ),
@@ -226,7 +228,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 14, // Reduced from 16
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A1A),
                       height: 1.3,
@@ -250,7 +252,7 @@ class _FeedScreenState extends State<FeedScreen> {
                         onTap: () => provider.toggleBookmark(article),
                         child: Icon(
                           isSaved ? Icons.bookmark : Icons.bookmark_outline,
-                          size: 24,
+                          size: 20, // Reduced from 24
                           color: isSaved
                               ? const Color(0xFF32D74B)
                               : Colors.grey[400],

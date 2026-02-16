@@ -109,7 +109,7 @@ class _SplashScreenState extends State<SplashScreen>
               const Text(
                 'My Best Ramadhan',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 24, // Reduced from 32
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                   letterSpacing: -0.5,
@@ -119,17 +119,17 @@ class _SplashScreenState extends State<SplashScreen>
               const Text(
                 'Jadikan Ramadhan Tahun ini berbeda',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 13, // Reduced from 16
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               const SizedBox(height: 60),
               const SizedBox(
-                width: 40,
-                height: 40,
+                width: 32, // Reduced from 40
+                height: 32, // Reduced from 40
                 child: CircularProgressIndicator(
-                  strokeWidth: 3,
+                  strokeWidth: 2.5, // Reduced from 3
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               ),
@@ -142,8 +142,8 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildLogo() {
     return Container(
-      width: 140,
-      height: 140,
+      width: 100, // Reduced from 140
+      height: 100, // Reduced from 140
       decoration: BoxDecoration(
         color: Colors.white,
         shape: BoxShape.circle,

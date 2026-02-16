@@ -133,7 +133,7 @@ class NotificationService {
     if (quotes.isEmpty) return;
 
     final now = DateTime.now();
-    // SLOT PRODUKSI: Jam 7, 9, 12, 17, 20
+    // SLOT PRODUKSI: Jam 7, 9, 12, 17, 21
     final List<Map<String, int>> productionSlots = [
       {'hour': 7, 'minute': 0},
       {'hour': 9, 'minute': 0},
@@ -242,10 +242,10 @@ class NotificationService {
       title: title,
       body: body,
       scheduledDate: targetTZ,
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           'daily_reminder_channel',
-          ' Daily Reminders',
+          'Daily Reminders',
           channelDescription: 'Pengingat harian Ramadhan',
           importance: Importance.max,
           priority: Priority.high,
@@ -277,7 +277,7 @@ class NotificationService {
 
   Future<void> showInstantNotification(
       {required String title, required String body}) async {
-    const AndroidNotificationDetails androidDetails =
+    final AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       'instant_channel',
       'Instant Notifications',
@@ -287,8 +287,8 @@ class NotificationService {
       color: AppColors.primaryGreen,
     );
 
-    const NotificationDetails details = NotificationDetails(
-        android: androidDetails, iOS: DarwinNotificationDetails());
+    final NotificationDetails details = NotificationDetails(
+        android: androidDetails, iOS: const DarwinNotificationDetails());
 
     await flutterLocalNotificationsPlugin.show(
       id: 0,

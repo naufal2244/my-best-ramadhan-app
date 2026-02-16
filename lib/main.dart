@@ -44,6 +44,17 @@ class MyApp extends StatelessWidget {
         // Hilangkan banner "DEBUG" di pojok kanan atas
         debugShowCheckedModeBanner: false,
 
+        // Global Builder to clamp text scaling
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: MediaQuery.textScalerOf(context)
+                  .clamp(minScaleFactor: 1.0, maxScaleFactor: 1.2),
+            ),
+            child: child!,
+          );
+        },
+
         // Theme aplikasi (warna, font, dll)
         theme: ThemeData(
           // Color scheme utama aplikasi

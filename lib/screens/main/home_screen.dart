@@ -205,35 +205,35 @@ class _HomeScreenState extends State<HomeScreen> {
               SafeArea(
                 child: CustomScrollView(
                   slivers: [
-                    // App Bar
+                    // App Bar - Adaptive sizing
                     SliverAppBar(
                       floating: true,
                       backgroundColor: Colors.white,
                       elevation: 0,
                       automaticallyImplyLeading: false,
                       centerTitle: false,
-                      toolbarHeight: 110, // Ditingkatkan agar tidak mepet
+                      toolbarHeight: (MediaQuery.of(context).size.height * 0.1).clamp(65.0, 85.0), // Even smaller
                       title: Padding(
-                        padding: const EdgeInsets.only(
-                            top: 20), // Padding tambahan ke bawah kamera
+                        padding: EdgeInsets.only(
+                            top: MediaQuery.of(context).size.height * 0.005), // Even smaller padding 
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Assalamualaikum,',
                               style: TextStyle(
-                                fontSize: 20,
+                                fontSize: (MediaQuery.of(context).size.width * 0.045).clamp(14.0, 18.0),
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF757575),
+                                color: const Color(0xFF757575),
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 2), // Reduced from 4
                             Text(
                               '${auth.userData?.displayName ?? "User"}! 👋',
-                              style: const TextStyle(
-                                fontSize: 28,
+                              style: TextStyle(
+                                fontSize: (MediaQuery.of(context).size.width * 0.06).clamp(20.0, 26.0), // Smaller
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF1A1A1A),
+                                color: const Color(0xFF1A1A1A),
                               ),
                             ),
                           ],
@@ -243,7 +243,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     SliverPadding(
                       padding:
-                          const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 24.0),
+                          const EdgeInsets.fromLTRB(24.0, 4.0, 24.0, 20.0), // Reduced top padding from 12.0
                       sliver: SliverList(
                         delegate: SliverChildListDelegate([
                           // Motivational Quote Card
@@ -296,14 +296,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 bottom: 24,
                 right: 24,
                 child: SizedBox(
-                  width: 68,
-                  height: 68,
+                  width: 56, // Standard MD FAB Size
+                  height: 56, // Standard MD FAB Size
                   child: FloatingActionButton(
                     onPressed: _navToCreate,
                     backgroundColor: const Color(0xFF32D74B),
                     elevation: 6,
                     shape: const CircleBorder(),
-                    child: const Icon(Icons.add, color: Colors.white, size: 36),
+                    child: const Icon(Icons.add, color: Colors.white, size: 28), // Smaller icon
                   ),
                 ),
               ),
@@ -348,15 +348,15 @@ class _HomeScreenState extends State<HomeScreen> {
             final isAfterRamadhan = currentDay > auth.totalRamadhanDays;
 
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4), // Reduced from 8
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Reduced from 16
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF32D74B), Color(0xFF63E677)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFF32D74B).withOpacity(0.3),
@@ -391,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : 'Menuju Ramadhan'),
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 14, // Reduced from 16
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -405,18 +405,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         : quoteText,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: 13, // Reduced from 14
                       fontStyle: FontStyle.italic,
-                      height: 1.5,
+                      height: 1.4, // Reduced from 1.5
                     ),
                   ),
                   if (!isAfterRamadhan && quoteSource.isNotEmpty) ...[
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8), // Reduced from 12
                     Text(
                       '— $quoteSource',
                       style: TextStyle(
                         color: Colors.white.withOpacity(0.9),
-                        fontSize: 12,
+                        fontSize: 11, // Reduced from 12
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -437,12 +437,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         margin: const EdgeInsets.only(right: 12),
         padding: isSelected
-            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-            : const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+            ? const EdgeInsets.symmetric(horizontal: 14, vertical: 6) // Reduced from 16, 8
+            : const EdgeInsets.symmetric(horizontal: 2, vertical: 6), // Reduced from 8
         decoration: isSelected
             ? BoxDecoration(
                 color: const Color(0xFFE8F9EC),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16), // Reduced from 20
               )
             : null,
         child: Text(
@@ -487,19 +487,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 8),
+      const SizedBox(height: 6), // Reduced from 8
       Align(
         alignment: Alignment.centerLeft,
         child: Text(
           '$dailyCompleted dari $totalDaily Selesai Hari Ini!',
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 13, // Reduced from 14
             fontWeight: FontWeight.w700,
             color: Color(0xFF1A1A1A),
           ),
         ),
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12), // Reduced from 16
       ...activeHabits.map((habit) => _buildDailyHabitItem(habit)).toList(),
       const SizedBox(height: 16),
       if (completedHabits.isNotEmpty) ...[
@@ -549,7 +549,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDailyHabitItem(HabitModel habit) {
     final isDone = _isDoneToday(habit);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+      padding: const EdgeInsets.only(bottom: 8.0), // Reduced from 12.0
       child: GestureDetector(
         onTap: () => _navToDetail(habit),
         child: Slidable(
@@ -621,7 +621,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10), // Reduced from 12
             width: double.infinity,
             decoration: BoxDecoration(
               color: habit.isAutoGenerated
@@ -645,7 +645,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Text(
                     habit.name,
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14, // Reduced from 16
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF1A1A1A),
                       decoration: isDone ? TextDecoration.lineThrough : null,
@@ -707,18 +707,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: Text(habit.name,
                             style: const TextStyle(
-                                fontSize: 16,
+                                fontSize: 14, // Reduced from 16
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF1A1A1A))),
                       ),
                       Text(subtitle,
                           style: TextStyle(
-                              fontSize: 12,
+                              fontSize: 11, // Reduced from 12
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[600])),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12), // Reduced from 16
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(7, (index) {
@@ -743,8 +743,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: 32, // Reduced from 36
+          height: 32, // Reduced from 36
           decoration: BoxDecoration(
             color: isDone
                 ? const Color(0xFF32D74B)

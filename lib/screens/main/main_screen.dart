@@ -39,25 +39,24 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: SizedBox(
-        height: 100, // Increased height to prevent clipping
+        height: 75, // Reduced from 85
         child: Stack(
           alignment: Alignment.bottomCenter,
           clipBehavior: Clip.none,
           children: [
             // Bottom Bar Container
             Container(
-              height: 70,
-              margin: const EdgeInsets.only(bottom: 0),
+              height: 58, // Reduced from 65
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
+                  topLeft: Radius.circular(20), // Smaller radius
+                  topRight: Radius.circular(20),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 15,
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
                     offset: const Offset(0, -2),
                   ),
                 ],
@@ -70,7 +69,7 @@ class _MainScreenState extends State<MainScreen> {
                     label: 'Feed',
                     index: 0,
                   ),
-                  const SizedBox(width: 80), // Space for center FAB
+                  const SizedBox(width: 70), // Reduced from 80
                   _buildNavItem(
                     icon: Icons.person_outline_rounded,
                     label: 'Profil',
@@ -82,7 +81,7 @@ class _MainScreenState extends State<MainScreen> {
 
             // Center Floating Button
             Positioned(
-              top: 0, // Positioned at the top of the 100px SizedBox
+              top: 0,
               child: _buildCenterNavItem(),
             ),
           ],
@@ -109,18 +108,18 @@ class _MainScreenState extends State<MainScreen> {
               icon,
               color:
                   isActive ? const Color(0xFF32D74B) : const Color(0xFFBDBDBD),
-              size: 26,
+              size: 24, // Reduced from 26
             ),
-            const SizedBox(height: 4),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 4,
-              width: isActive ? 4 : 0,
-              decoration: BoxDecoration(
-                color: const Color(0xFF32D74B),
-                shape: BoxShape.circle,
+            const SizedBox(height: 2), // Reduced from 4
+            if (isActive)
+              Container(
+                height: 4,
+                width: 4,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF32D74B),
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -134,8 +133,8 @@ class _MainScreenState extends State<MainScreen> {
       onTap: () => setState(() => _currentIndex = 1),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        width: 64,
-        height: 64,
+        width: 56, // Reduced from 64
+        height: 56, // Reduced from 64
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
@@ -156,16 +155,16 @@ class _MainScreenState extends State<MainScreen> {
               color:
                   (isActive ? const Color(0xFF32D74B) : const Color(0xFF9E9E9E))
                       .withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
-          border: Border.all(color: Colors.white, width: 4),
+          border: Border.all(color: Colors.white, width: 3), // Reduced from 4
         ),
         child: const Icon(
           Icons.home_rounded,
           color: Colors.white,
-          size: 30,
+          size: 28, // Reduced from 30
         ),
       ),
     );

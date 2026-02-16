@@ -71,6 +71,8 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               child: PageView(
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
+                physics:
+                    const ClampingScrollPhysics(), // Prevent bouncy scroll for better feel
                 children: [
                   _WelcomeScreen(onNext: _nextPage),
                   _TargetSettingScreen(
@@ -88,7 +90,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
             // Page indicator
             Padding(
-              padding: const EdgeInsets.only(bottom: 32.0),
+              padding: const EdgeInsets.only(bottom: 16.0), // Reduced from 32
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
@@ -173,8 +175,8 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
           ScaleTransition(
             scale: _scaleAnimation,
             child: Container(
-              width: 140,
-              height: 140,
+              width: 100, // Reduced from 140
+              height: 100, // Reduced from 140
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF32D74B), Color(0xFF63E677)],
@@ -192,7 +194,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
               ),
               child: const Icon(
                 Icons.auto_awesome,
-                size: 70,
+                size: 50, // Reduced from 70
                 color: Colors.white,
               ),
             ),
@@ -209,7 +211,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                   'Assalamualaikum! 👋',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 24, // Reduced from 32
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                   ),
@@ -225,7 +227,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                   child: const Text(
                     "🌙 Bulan Al-Qur'an Telah Tiba!",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 13, // Reduced from 16
                       color: Color(0xFF32D74B),
                       fontWeight: FontWeight.w600,
                     ),
@@ -236,20 +238,20 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                   "\"Bulan Ramadhan adalah (bulan) yang di dalamnya diturunkan Al-Qur'an...\" (QS. Al-Baqarah: 185)",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13, // Reduced from 16
                     color: Colors.grey[600],
-                    height: 1.6,
+                    height: 1.5,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Text(
                   'Ramadhan adalah momentum terbaik untuk lebih dekat dengan Al-Qur\'an.\n\nAplikasi ini akan membantumu mencapai target khatam yang lebih baik! ✨',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: 13, // Reduced from 16
                     color: Colors.grey[600],
-                    height: 1.6,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -280,7 +282,7 @@ class _WelcomeScreenState extends State<_WelcomeScreen>
                     Text(
                       'Lanjut',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15, // Reduced from 16
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -336,176 +338,180 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
     final totalJuz = _targetPages * 30;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
-          const SizedBox(height: 40),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const SizedBox(height: 40),
 
-          // Title
-          const Text(
-            'Target Khatam Al-Qur\'an 📖',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          Text(
-            'Berapa kali kamu ingin Khatam Al-Qur\'an di bulan Ramadhan tahun ini?',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-              height: 1.5,
-            ),
-          ),
-
-          const Spacer(),
-
-          // Counter with animation
-          TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 300),
-            tween: Tween(begin: 0, end: _targetPages.toDouble()),
-            builder: (context, value, child) {
-              return Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF32D74B), Color(0xFF63E677)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                  // Title
+                  const Text(
+                    'Target Khatam Al-Qur\'an 📖',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1A1A1A),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF32D74B).withOpacity(0.3),
-                      blurRadius: 30,
-                      offset: const Offset(0, 15),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'Berapa kali kamu ingin Khatam Al-Qur\'an di bulan Ramadhan tahun ini?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                      height: 1.5,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Minus button
-                    _buildCounterButton(
-                      icon: Icons.remove,
-                      onTap: () => _updateTarget(-1),
-                      enabled: _targetPages > 1,
-                    ),
-
-                    const SizedBox(width: 48),
-
-                    // Number display
-                    Text(
-                      value.toInt().toString(),
-                      style: const TextStyle(
-                        fontSize: 72,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-
-                    const SizedBox(width: 48),
-
-                    // Plus button
-                    _buildCounterButton(
-                      icon: Icons.add,
-                      onTap: () => _updateTarget(1),
-                      enabled: true,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          const Text(
-            'Kali Khatam',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1A1A1A),
-            ),
-          ),
-
-          const Spacer(),
-
-          // Stats
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  'Untuk mencapai target ini:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1A1A),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildStatCard(
-                        '📅',
-                        'Per Hari',
-                        juzPerDay,
-                      ),
+
+                  const SizedBox(height: 32),
+
+                  // Counter with animation
+                  TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 300),
+                    tween: Tween(begin: 0, end: _targetPages.toDouble()),
+                    builder: (context, value, child) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 24, horizontal: 24),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF32D74B), Color(0xFF63E677)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF32D74B).withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildCounterButton(
+                              icon: Icons.remove,
+                              onTap: () => _updateTarget(-1),
+                              enabled: _targetPages > 1,
+                            ),
+                            const SizedBox(width: 32),
+                            Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(
+                                fontSize: 56,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 32),
+                            _buildCounterButton(
+                              icon: Icons.add,
+                              onTap: () => _updateTarget(1),
+                              enabled: true,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  const Text(
+                    'Kali Khatam',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF1A1A1A),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildStatCard(
-                        '📖',
-                        'Total Target',
-                        '$totalJuz Juz',
-                      ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Stats
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ],
-                ),
-              ],
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Untuk mencapai target ini:',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                '📅',
+                                'Per Hari',
+                                juzPerDay,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStatCard(
+                                '📖',
+                                'Total Target',
+                                '$totalJuz Juz',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Text(
+                    '* Berdasarkan standar Mushaf Utsmani & Kemenag RI\n(15 baris per halaman, total 604 halaman)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.green[700],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(
+                      height: 8), // Matched with edit target screen (8)
+                  Text(
+                    'Tenang! Kamu bisa ubah target ini kapan saja 😊',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(
+                      height:
+                          24), // Added some bottom padding for the scrollable part
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 24),
-
-          Text(
-            '* Berdasarkan standar Mushaf Utsmani & Kemenag RI\n(15 baris per halaman, total 604 halaman)',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.green[700],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Tenang! Kamu bisa ubah target ini kapan saja 😊',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          // Continue button
+          // Continue button - Fixed at bottom to align with other screens
           SizedBox(
             width: double.infinity,
-            height: 54,
+            height: 54, // Restored from 48 to match other onboarding screens
             child: ElevatedButton(
               onPressed: widget.onNext,
               style: ElevatedButton.styleFrom(
@@ -522,7 +528,7 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
                   Text(
                     'Lanjut',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -533,7 +539,7 @@ class _TargetSettingScreenState extends State<_TargetSettingScreen> {
             ),
           ),
 
-          const SizedBox(height: 48),
+          const SizedBox(height: 48), // Consistent bottom spacing
         ],
       ),
     );
@@ -634,7 +640,7 @@ class _TipsScreen extends StatelessWidget {
             'Tips Khatam Al-Qur\'an 💡',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 22, // Reduced from 28
               fontWeight: FontWeight.bold,
               color: Color(0xFF1A1A1A),
             ),
@@ -646,7 +652,7 @@ class _TipsScreen extends StatelessWidget {
             'Agar target ${targetPages}x khatam tercapai dengan lebih mudah dan konsisten',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 13, // Reduced from 16
               color: Colors.grey[600],
               height: 1.5,
             ),
@@ -714,7 +720,7 @@ class _TipsScreen extends StatelessWidget {
                   Text(
                     'Mulai Sekarang',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15, // Reduced from 16
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -765,7 +771,7 @@ class _TipsScreen extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 14, // Reduced from 16
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1A1A1A),
                   ),
@@ -774,7 +780,7 @@ class _TipsScreen extends StatelessWidget {
                 Text(
                   description,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12, // Reduced from 14
                     color: Colors.grey[700],
                     height: 1.5,
                   ),
@@ -845,8 +851,28 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
       final bool isGranted = await notificationService.requestPermissions();
 
       if (isGranted) {
-        // Hanya lanjut jika sudah benar-benar diizinkan
+        // Berhasil diizinkan!
         await widget.onNext();
+      } else {
+        // Jika ditolak, beri tahu user bahwa mereka bisa mengaktifkannya nanti di setting
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                  'Kamu bisa mengaktifkan notifikasi nanti di Pengaturan HP-mu 😊'),
+              action: SnackBarAction(
+                label: 'OK',
+                textColor: Colors.white,
+                onPressed: () {},
+              ),
+              backgroundColor: Colors.grey[800],
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          // Tetap lanjut ke Home meskipun tidak diizinkan sekarang,
+          // agar user tidak terjebak di screen primining
+          await widget.onNext();
+        }
       }
     } finally {
       if (mounted) {
@@ -902,7 +928,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                               ),
                               child: const Icon(
                                 Icons.notifications_active_rounded,
-                                size: 60,
+                                size: 48, // Reduced from 60
                                 color: Colors.white,
                               ),
                             ),
@@ -917,7 +943,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                         'Yuk, Izinkan notifikasi agar kami bisa mengingatkanmu dengan renungan harian yang menginspirasi!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 18, // Reduced from 22
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
                           height: 1.4,
@@ -948,7 +974,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                       const Text(
                         'Manfaat yang didapat!',
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 20, // Reduced from 28
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF1A1A1A),
                           letterSpacing: -0.5,
@@ -958,7 +984,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                       const Text(
                         '🌟 Teman pengingat setia setiap hari',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14, // Reduced from 16
                           color: Color(0xFF1A1A1A),
                           fontWeight: FontWeight.w500,
                         ),
@@ -1017,7 +1043,8 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                 // Primary button
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
+                  height:
+                      54, // Restored from 48 to match other onboarding screens
                   child: ElevatedButton(
                     onPressed: _handleEnableNotifications,
                     style: ElevatedButton.styleFrom(
@@ -1025,7 +1052,8 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius:
+                            BorderRadius.circular(10), // Reduced from 12
                       ),
                     ),
                     child: const Row(
@@ -1036,7 +1064,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                         Text(
                           'Ya, Saya Mau',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 15, // Reduced from 16
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1060,7 +1088,7 @@ class _NotificationPrimingScreenState extends State<_NotificationPrimingScreen>
                   child: Text(
                     'Nanti Saja',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 12, // Reduced from 14
                       color: Colors.grey[600],
                       fontWeight: FontWeight.w500,
                     ),

@@ -145,21 +145,21 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        toolbarHeight: 90,
+        toolbarHeight: 75, // Reduced from 90
         leading: Padding(
-          padding: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.only(top: 8),
           child: IconButton(
             icon: const Icon(Icons.close, color: Color(0xFF1A1A1A)),
             onPressed: () => Navigator.pop(context),
           ),
         ),
         title: Padding(
-          padding: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.only(top: 8),
           child: Text(
             widget.habit != null ? 'Edit Amalan' : 'Tambah Amalan Baru',
             style: const TextStyle(
               color: Color(0xFF1A1A1A),
-              fontSize: 18,
+              fontSize: 16, // Reduced from 18
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -251,16 +251,16 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                   'Mulai Kebiasaan Baik di Ramadhan',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 14, // Reduced from 16
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                SizedBox(height: 2),
                 Text(
                   'Tetapkan target kecil agar konsisten beribadah setiap hari.',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 13,
+                    fontSize: 12, // Reduced from 13
                     height: 1.4,
                   ),
                 ),
@@ -276,7 +276,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
     return Text(
       label,
       style: const TextStyle(
-        fontSize: 15,
+        fontSize: 14, // Reduced from 15
         fontWeight: FontWeight.w700,
         color: Color(0xFF1A1A1A),
       ),
@@ -292,11 +292,11 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
         filled: true,
         fillColor: const Color(0xFFF5F5F5),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12), // Reduced from 15
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFF32D74B), width: 2),
         ),
       ),
@@ -348,7 +348,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
           label,
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 13, // Reduced from 14
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
             color: isSelected ? const Color(0xFF32D74B) : Colors.grey[600],
           ),
@@ -473,7 +473,7 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 48, // Reduced from 56
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleCreate,
         style: ElevatedButton.styleFrom(
@@ -487,7 +487,9 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
             ? const CircularProgressIndicator(color: Colors.white)
             : const Text(
                 'Simpan',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold), // Reduced from 16
               ),
       ),
     );
